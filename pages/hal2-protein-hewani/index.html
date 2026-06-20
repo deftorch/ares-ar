@@ -141,32 +141,27 @@
       <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
       <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
       
-      <!-- Telur: Top Left -->
-      <a-gltf-model id="obj-telur" src="#telur" position="0.1 0.55 -0.1" scale="5 5 5" rotation="0 0 0" 
+      <a-gltf-model id="obj-telur" src="#telur" position="0.1 0.55 -0.1" scale="5 5 5" rotation="90 0 0" 
         animation="property: rotation; to: 0 360 0; dur: 4000; loop: true; easing: linear"
         class="clickable" food-clickable="foodId: telur">
       </a-gltf-model>
 
-      <!-- Lele: Top Center -->
-      <a-gltf-model id="obj-lele" src="#lele" position="-1.55 0.4 0.2" scale="0.1 0.1 0.1" rotation="0 0 0" 
+      <a-gltf-model id="obj-lele" src="#lele" position="-1.55 0.4 0.2" scale="0.1 0.1 0.1" rotation="90 0 0" 
         animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear"
         class="clickable" food-clickable="foodId: lele">
       </a-gltf-model>
 
-      <!-- Ikan: Top Right -->
-      <a-gltf-model id="obj-ikan" src="#ikan" position="0.1 0.35 -1.45" scale="0.07 0.07 0.07" rotation="0 -40 0" 
+      <a-gltf-model id="obj-ikan" src="#ikan" position="0.1 0.35 -1.45" scale="0.07 0.07 0.07" rotation="90 -40 0" 
         animation="property: rotation; to: 0 360 0; dur: 4500; loop: true; easing: linear"
         class="clickable" food-clickable="foodId: ikan">
       </a-gltf-model>
 
-      <!-- Hati Ayam: Bottom Left -->
-      <a-gltf-model id="obj-hati" src="#hati" position="1.35 0.45 0.25" scale="1.49 1.49 1.49" rotation="0 -5 0" 
+      <a-gltf-model id="obj-hati" src="#hati" position="1.35 0.45 0.25" scale="1.49 1.49 1.49" rotation="90 -5 0" 
         animation="property: rotation; to: 0 360 0; dur: 4200; loop: true; easing: linear"
         class="clickable" food-clickable="foodId: hati">
       </a-gltf-model>
 
-      <!-- Daging Sapi: Bottom Right -->
-      <a-gltf-model id="obj-daging" src="#daging" position="0 0.25 1.6" scale="0.09 0.09 0.09" rotation="0 0 0" 
+      <a-gltf-model id="obj-daging" src="#daging" position="0 0.25 1.6" scale="0.09 0.09 0.09" rotation="90 0 0" 
         animation="property: rotation; to: 0 360 0; dur: 4800; loop: true; easing: linear"
         class="clickable" food-clickable="foodId: daging">
       </a-gltf-model>
@@ -188,11 +183,13 @@
 
       target.addEventListener("targetFound", () => {
         scanningGuide.style.display = 'none';
+        document.querySelector('.top-nav').style.display = 'none';
       });
 
       target.addEventListener("targetLost", () => {
         scanningGuide.style.display = 'flex';
         infoPanel.classList.remove('visible');
+        document.querySelector('.top-nav').style.display = 'flex';
       });
 
       closePanel.addEventListener('click', () => {

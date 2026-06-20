@@ -41,6 +41,7 @@
         
         // Staggered animation for food items appearing
         this.el.sceneEl.addEventListener('targetFound', () => {
+          document.querySelector('.top-nav').style.display = 'none';
           this.foodItems.forEach((item, index) => {
             setTimeout(() => {
               item.setAttribute('visible', 'true');
@@ -57,6 +58,7 @@
         });
 
         this.el.sceneEl.addEventListener('targetLost', () => {
+          document.querySelector('.top-nav').style.display = 'flex';
           this.foodItems.forEach(item => item.setAttribute('visible', 'false'));
           visibleCount = 0;
           document.getElementById('highlight-msg').classList.remove('visible');
@@ -141,7 +143,7 @@
       <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
       
       <!-- Piring (Base) -->
-      <a-gltf-model src="#piring" position="0 0.1 0" scale="0.08 0.08 0.08" rotation="0 5 0"></a-gltf-model>
+      <a-gltf-model src="#piring" position="0 0.1 0" scale="0.08 0.08 0.08" rotation="90 5 0"></a-gltf-model>
 
       <!-- Food groups (will appear sequentially) -->
       <!-- Top Left: Karbo -->
