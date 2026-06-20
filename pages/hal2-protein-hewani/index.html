@@ -28,6 +28,20 @@
   </style>
 
   <script>
+    // Sticky AR Component
+    AFRAME.registerComponent('sticky-ar', {
+      tick: function () {
+        const target = document.querySelector('#target');
+        const models = document.querySelector('#models-container');
+        if (target && models && target.object3D.visible) {
+          models.setAttribute('visible', true);
+          models.object3D.position.copy(target.object3D.position);
+          models.object3D.quaternion.copy(target.object3D.quaternion);
+          models.object3D.scale.copy(target.object3D.scale);
+        }
+      }
+    });
+
     // Food Database
     const foodData = {
       'lele': {
@@ -94,8 +108,9 @@
   </div>
 
   <div class="ar-ui-layer">
-    <div class="top-nav">
+    <div class="top-nav" style="display: flex; justify-content: space-between; width: 100%;">
       <a href="../../index.html" class="back-btn interactive"><span>←</span> Kembali</a>
+      <button id="btn-rescan" class="back-btn interactive" style="display: none; background: #ef4444; color: white; border: none; font-weight: bold; cursor: pointer;">✕ Tutup Model</button>
     </div>
     <div id="scanning-guide" class="scanning-overlay">
       <div class="scanning-text">Arahkan ke halaman 2 (Protein Hewani)</div>
@@ -115,7 +130,7 @@
     </div>
   </div>
 
-  <a-scene 
+  <a-scene sticky-ar
     mindar-image="imageTargetSrc: ./hal2.mind; autoStart: true; uiScanning: #scanning-guide" 
     color-space="sRGB" 
     renderer="colorManagement: true; physicallyCorrectLights: true" 
@@ -136,33 +151,35 @@
       <a-entity cursor="fuse: false; rayOrigin: mouse;" raycaster="objects: .clickable"></a-entity>
     </a-camera>
 
-    <a-entity id="target" mindar-image-target="targetIndex: 0">
+    <a-entity id="target" mindar-image-target="targetIndex: 0"></a-entity>
+    
+    <a-entity id="models-container" visible="false">
       
       <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
       <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
       
       <!-- Telur: Top Left -->
-      <a-gltf-model id="obj-telur" src="#telur" position="0 0.35 0" scale="5 5 5" rotation="90 0 0" 
+      <a-gltf-model id="obj-telur" src="#telur" position="0 0.05 -0.6" scale="3.26 3.26 3.26" rotation="90 0 0" 
         class="clickable" food-clickable="foodId: telur">
       </a-gltf-model>
 
       <!-- Lele: Top Center -->
-      <a-gltf-model id="obj-lele" src="#lele" position="-1.8 0.4 0" scale="0.13 0.13 0.13" rotation="90 5 0" 
+      <a-gltf-model id="obj-lele" src="#lele" position="-1.05 0 -0.75" scale="0.06 0.06 0.06" rotation="90 5 0" 
         class="clickable" food-clickable="foodId: lele">
       </a-gltf-model>
 
       <!-- Ikan: Top Right -->
-      <a-gltf-model id="obj-ikan" src="#ikan" position="2 0.4 0" scale="0.12 0.12 0.12" rotation="-90 180 0" 
+      <a-gltf-model id="obj-ikan" src="#ikan" position="1.1 0.1 -0.5" scale="0.06 0.06 0.06" rotation="-90 180 0" 
         class="clickable" food-clickable="foodId: ikan">
       </a-gltf-model>
 
       <!-- Hati Ayam: Bottom Left -->
-      <a-gltf-model id="obj-hati" src="#hati" position="0.1 2 0" scale="2.11 2.11 2.11" rotation="90 0 0" 
+      <a-gltf-model id="obj-hati" src="#hati" position="0.1 1.15 -0.45" scale="1.18 1.18 1.18" rotation="90 0 0" 
         class="clickable" food-clickable="foodId: hati">
       </a-gltf-model>
 
       <!-- Daging Sapi: Bottom Right -->
-      <a-gltf-model id="obj-daging" src="#daging" position="0 -1.4 0" scale="0.11 0.11 0.11" rotation="90 0 0" 
+      <a-gltf-model id="obj-daging" src="#daging" position="0 -1.15 -0.7" scale="0.07 0.07 0.07" rotation="90 0 0" 
         class="clickable" food-clickable="foodId: daging">
       </a-gltf-model>
       
@@ -175,6 +192,8 @@
       const scanningGuide = document.querySelector('#scanning-guide');
       const infoPanel = document.querySelector('#info-panel');
       const closePanel = document.querySelector('#close-panel');
+      const btnRescan = document.querySelector('#btn-rescan');
+      const modelsContainer = document.querySelector('#models-container');
 
       // Hide Loading Screen when AR is ready
       document.querySelector('a-scene').addEventListener('arReady', () => {
@@ -183,9 +202,18 @@
 
       target.addEventListener("targetFound", () => {
         scanningGuide.style.display = 'none';
+        btnRescan.style.display = 'block';
       });
 
+      // Target lost does NOTHING now, so models freeze on screen
       target.addEventListener("targetLost", () => {
+        // model stays visible on screen
+      });
+
+      // User clicks X button to rescan
+      btnRescan.addEventListener('click', () => {
+        modelsContainer.setAttribute('visible', false);
+        btnRescan.style.display = 'none';
         scanningGuide.style.display = 'flex';
         infoPanel.classList.remove('visible');
       });
