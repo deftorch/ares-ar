@@ -82,8 +82,8 @@
     
     <a-assets>
       <!-- We use dummy GLB references as per the plan -->
-      <a-asset-item id="anak-sehat" src="../../models/anak-sehat.glb"></a-asset-item>
-      <a-asset-item id="anak-stunting" src="../../models/anak-stunting.glb"></a-asset-item>
+      <a-asset-item id="anak-sehat" src="../../models/anak_sehat.glb"></a-asset-item>
+      <a-asset-item id="anak-stunting" src="../../models/anak_stunting.glb"></a-asset-item>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -99,18 +99,18 @@
       <!-- Sehat Model -->
       <a-entity id="model-sehat" 
                 gltf-model="#anak-sehat" 
-                position="-0.95 0 1.4" 
-                scale="0.68 0.68 0.68" 
-                rotation="-90 0 0">
+                position="-0.7 0 -0.05" 
+                scale="0.92 0.92 0.92" 
+                rotation="0 0 0">
         <a-text value="Tumbuh Optimal" position="0 1.2 0" align="center" color="#10b981" scale="0.5 0.5 0.5"></a-text>
       </a-entity>
 
       <!-- Stunting Model -->
       <a-entity id="model-stunting" 
                 gltf-model="#anak-stunting" 
-                position="0.95 0 1.3" 
+                position="0.8 0 0" 
                 scale="1 1 1" 
-                rotation="-90 0 0">
+                rotation="0 0 0">
         <a-text value="Stunting" position="0 1.2 0" align="center" color="#ef4444" scale="0.5 0.5 0.5"></a-text>
       </a-entity>
       
