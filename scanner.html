@@ -36,14 +36,24 @@
 
     /* Checklist & Quiz Overlays */
     .checklist-wrapper, .quiz-wrapper {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 100%; display: none; z-index: 200;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(248, 250, 252, 0.6); backdrop-filter: blur(4px);
+      display: none; z-index: 1000; pointer-events: auto;
     }
-    .visible-wrapper { display: block; animation: fadeIn 0.4s ease-out; }
+    .visible-wrapper { display: flex; justify-content: center; align-items: center; animation: fadeBg 0.3s ease-out; }
     
-    .checklist-container, .quiz-container { position: relative; }
+    .checklist-container, .quiz-container { 
+      position: relative; max-height: 85vh; display: flex; flex-direction: column; 
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .global-close-btn {
+      position: absolute; top: 20px; right: 20px; z-index: 2000;
+      width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem;
+      background: #ef4444; color: white; border: 3px solid white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold; cursor: pointer;
+    }
     .cl-header { flex-shrink: 0; text-align: center; margin-bottom: 1rem; }
-    .cl-items-list, .quiz-scroll-area { max-height: 75vh; overflow-y: auto; padding-right: 5px; }
+    .cl-items-list, .quiz-scroll-area { overflow-y: auto; padding-right: 5px; flex-shrink: 1; min-height: 0; }
     .cl-items-list::-webkit-scrollbar, .quiz-scroll-area::-webkit-scrollbar { width: 6px; }
     .cl-items-list::-webkit-scrollbar-track, .quiz-scroll-area::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
     .cl-items-list::-webkit-scrollbar-thumb, .quiz-scroll-area::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
@@ -67,7 +77,8 @@
     .result-title { font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin-bottom: 0.5rem; }
     .result-desc { font-size: 1.1rem; font-weight: 700; color: #64748B; margin-bottom: 2rem; }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -45%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+    @keyframes fadeBg { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   </style>
 
   <script>
@@ -144,8 +155,8 @@
 
   <!-- Checklist Overlay -->
   <div id="checklist-wrapper" class="checklist-wrapper interactive">
+    <button class="global-close-btn interactive btn-close-overlay">✕</button>
     <div class="checklist-container">
-      <button class="close-btn interactive btn-close-overlay" style="position: absolute; top: 15px; right: 15px; z-index: 10; width: 35px; height: 35px; font-size: 1rem;">✕</button>
       <div class="cl-header"><h3 class="cl-title">5 Langkah Cegah</h3><div id="progress-text" class="cl-progress">0/5 Langkah Selesai</div></div>
       <div class="cl-items-list">
         <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>1. Minum Tablet Tambah Darah</h4><p>Rutin minum TTD setiap hari untuk cegah anemia (kekurangan darah).</p></div></div>
@@ -160,8 +171,8 @@
 
   <!-- Quiz Overlay -->
   <div class="quiz-wrapper interactive" id="quiz-wrapper">
+    <button class="global-close-btn interactive btn-close-overlay">✕</button>
     <div class="quiz-container">
-      <button class="close-btn interactive btn-close-overlay" style="position: absolute; top: 15px; right: 15px; z-index: 10; width: 35px; height: 35px; font-size: 1rem;">✕</button>
       <div class="quiz-scroll-area">
         <div id="start-screen" style="text-align: center;"><h2 style="font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin-top:0;">Kuis Stunting</h2><p style="color: #64748B; font-weight: 700; margin-bottom: 2rem;">Yuk, uji pengetahuan Ayah/Bunda dengan 10 pertanyaan singkat!</p><button id="btn-start" class="btn-primary">Mulai Kuis</button></div>
         <div id="question-screen" style="display: none;">
