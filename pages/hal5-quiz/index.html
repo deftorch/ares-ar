@@ -22,14 +22,18 @@
     
     .quiz-container {
       position: relative;
-      max-height: 85vh;
+    }
+    
+    .quiz-scroll-area {
+      max-height: 75vh;
       overflow-y: auto;
+      padding-right: 5px;
     }
 
     /* Scrollbar */
-    .quiz-container::-webkit-scrollbar { width: 6px; }
-    .quiz-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-    .quiz-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .quiz-scroll-area::-webkit-scrollbar { width: 6px; }
+    .quiz-scroll-area::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .quiz-scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     
     .quiz-wrapper.visible {
       display: block;
@@ -122,6 +126,7 @@
     <div class="quiz-container">
       <button id="btn-close-quiz" class="close-btn interactive" style="position: absolute; top: -15px; right: -15px; z-index: 10;">✕</button>
       
+      <div class="quiz-scroll-area">
       <!-- Start Screen -->
       <div id="start-screen" style="text-align: center;">
         <h2 style="font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin-top:0;">Kuis Stunting</h2>
@@ -159,6 +164,7 @@
         <button id="btn-restart" class="btn-primary">Coba Lagi</button>
       </div>
 
+      </div>
     </div>
   </div>
 
