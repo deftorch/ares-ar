@@ -99,7 +99,7 @@
                 gltf-model="#anak-sehat" 
                 position="-0.85 0 0" 
                 scale="1.73 1.73 1.73" 
-                rotation="90 0 0">
+                rotation="0 0 0">
         <a-text value="Tumbuh Optimal" position="0 1.2 0" align="center" color="#10b981" scale="0.5 0.5 0.5"></a-text>
       </a-entity>
 
@@ -108,7 +108,7 @@
                 gltf-model="#anak-stunting" 
                 position="0.8 0 0.35" 
                 scale="0.54 0.54 0.54" 
-                rotation="90 0 0">
+                rotation="0 0 0">
         <a-text value="Stunting" position="0 1.2 0" align="center" color="#ef4444" scale="0.5 0.5 0.5"></a-text>
       </a-entity>
       
@@ -128,14 +128,13 @@
       target.addEventListener("targetFound", () => {
         scanningGuide.style.display = 'none';
         compareBtnContainer.style.display = 'block';
-        document.querySelector('.top-nav').style.display = 'none';
       });
 
+      // When target is lost
       target.addEventListener("targetLost", () => {
         scanningGuide.style.display = 'flex';
         compareBtnContainer.style.display = 'none';
         infoPanel.classList.remove('visible');
-        document.querySelector('.top-nav').style.display = 'flex';
       });
 
       // AR Engine Ready (Hide Loading Screen)

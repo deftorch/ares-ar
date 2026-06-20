@@ -154,7 +154,9 @@
     mindar-image="imageTargetSrc: ./hal5.mind; autoStart: true; uiScanning: #scanning-guide" 
     color-space="sRGB" 
     renderer="colorManagement: true" 
-    device-orientation-permission-ui="enabled: false">
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false"
+    gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/; basisTranscoderPath: https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/libs/basis/; meshoptDecoderPath: https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js;">
     
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
     <a-entity id="target" mindar-image-target="targetIndex: 0"></a-entity>
@@ -194,13 +196,11 @@
       target.addEventListener("targetFound", () => {
         scanningGuide.style.display = 'none';
         quizWrapper.classList.add('visible');
-        document.querySelector('.top-nav').style.display = 'none';
       });
 
       target.addEventListener("targetLost", () => {
         scanningGuide.style.display = 'flex';
         quizWrapper.classList.remove('visible');
-        document.querySelector('.top-nav').style.display = 'flex';
       });
 
       fetch('quiz-data.json')
