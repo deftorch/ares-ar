@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Protein Hewani - ARES Modul 2</title>
+  
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <link rel="stylesheet" href="../../shared/ar-styles.css">
+  
+  <style>
+    /* Styling for the dynamic food info panel */
+    #panel-gizi {
+      color: #3b82f6;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    #panel-manfaat {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .recipe-list {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .recipe-list h4 { margin-top: 0; color: #10b981; }
+  </style>
+
+  <script>
+    // Food Database
+    const foodData = {
+      'lele': {
+        title: 'Ikan Lele',
+        gizi: 'Protein, Lemak Sehat, Vit D & B12',
+        manfaat: 'Membantu pembentukan sel otak dan sistem kekebalan tubuh.',
+        olahan: ['Lele Goreng Kremes', 'Nugget Lele', 'Mangut Lele Balita']
+      },
+      'telur': {
+        title: 'Telur Ayam',
+        gizi: 'Protein Tinggi, Kolin',
+        manfaat: 'Sangat baik untuk perkembangan kognitif dan kecerdasan otak anak.',
+        olahan: ['Telur Orak-Arik Sayur', 'Puding Telur', 'Telur Rebus Halus']
+      },
+      'ikan': {
+        title: 'Ikan Laut',
+        gizi: 'Omega-3, Iodium, Zinc',
+        manfaat: 'Mencegah gangguan pertumbuhan dan meningkatkan fungsi penglihatan.',
+        olahan: ['Sup Ikan Bening', 'Bakso Ikan', 'Ikan Kukus Jahe']
+      },
+      'hati': {
+        title: 'Hati Ayam',
+        gizi: 'Zat Besi, Vit A, Folat, B12',
+        manfaat: 'Mencegah anemia yang sering menjadi penyebab stunting tidak langsung.',
+        olahan: ['Tim Hati Ayam', 'Sate Lilit Hati', 'Bubur Hati Ayam']
+      },
+      'daging': {
+        title: 'Daging Sapi',
+        gizi: 'Protein, Zat Besi, Zinc',
+        manfaat: 'Membantu pembentukan otot dan perbaikan jaringan tubuh yang rusak.',
+        olahan: ['Semur Daging Cincang', 'Bola Daging Sayur', 'Kaldu Daging Sapi']
+      }
+    };
+
+    // Component to handle clicking on food models
+    AFRAME.registerComponent('food-clickable', {
+      schema: { foodId: {type: 'string'} },
+      init: function () {
+        this.el.addEventListener('click', () => {
+          const data = foodData[this.data.foodId];
+          if(data) {
+            document.getElementById('panel-title').textContent = data.title;
+            document.getElementById('panel-gizi').textContent = data.gizi;
+            document.getElementById('panel-manfaat').textContent = data.manfaat;
+            
+            const olahanHtml = data.olahan.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('panel-olahan').innerHTML = `<div class="recipe-list"><h4>Ide Olahan:</h4><ul>${olahanHtml}</ul></div>`;
+            
+            document.getElementById('info-panel').classList.add('visible');
+          }
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  
+  <!-- Loading Screen (Global UX) -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loader-spinner"></div>
+    <h2>Memuat Keajaiban AR...</h2>
+    <p>Mohon tunggu sebentar, kami sedang menyiapkan 5 model makanan dan memuat kamera Anda.</p>
+    <div class="permission-note">📷 Jika muncul notifikasi, izinkan akses kamera.</div>
+  </div>
+
+  <div class="ar-ui-layer">
+    <div class="top-nav">
+      <a href="../../index.html" class="back-btn interactive"><span>←</span> Kembali</a>
+    </div>
+    <div id="scanning-guide" class="scanning-overlay">
+      <div class="scanning-text">Arahkan ke halaman 2 (Protein Hewani)</div>
+    </div>
+  </div>
+
+  <!-- Dynamic Info Panel -->
+  <div id="info-panel" class="info-panel">
+    <div class="panel-header">
+      <h3 id="panel-title" class="panel-title">Nama Makanan</h3>
+      <button id="close-panel" class="close-btn">✕</button>
+    </div>
+    <div class="panel-content">
+      <div id="panel-gizi"></div>
+      <div id="panel-manfaat"></div>
+      <div id="panel-olahan"></div>
+    </div>
+  </div>
+
+  <a-scene 
+    mindar-image="imageTargetSrc: ./hal2.mind; autoStart: true; uiScanning: #scanning-guide" 
+    color-space="sRGB" 
+    renderer="colorManagement: true; physicallyCorrectLights: true" 
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false"
+    gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/; basisTranscoderPath: https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/libs/basis/; meshoptDecoderPath: https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js;">
+    
+    <a-assets>
+      <a-asset-item id="lele" src="../../models/lele.glb"></a-asset-item>
+      <a-asset-item id="telur" src="../../models/telur.glb"></a-asset-item>
+      <a-asset-item id="ikan" src="../../models/ikan.glb"></a-asset-item>
+      <a-asset-item id="hati" src="../../models/hati_ayam.glb"></a-asset-item>
+      <a-asset-item id="daging" src="../../models/daging_sapi.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Raycaster for clicking objects -->
+    <a-camera position="0 0 0" look-controls="enabled: false">
+      <a-entity cursor="fuse: false; rayOrigin: mouse;" raycaster="objects: .clickable"></a-entity>
+    </a-camera>
+
+    <a-entity id="target" mindar-image-target="targetIndex: 0">
+      
+      <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+      <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
+      
+      <!-- Telur: Top Left -->
+      <a-gltf-model id="obj-telur" src="#telur" position="0.1 0.55 -0.1" scale="5 5 5" rotation="0 0 0" 
+        animation="property: rotation; to: 0 360 0; dur: 4000; loop: true; easing: linear"
+        class="clickable" food-clickable="foodId: telur">
+      </a-gltf-model>
+
+      <!-- Lele: Top Center -->
+      <a-gltf-model id="obj-lele" src="#lele" position="-1.55 0.4 0.2" scale="0.1 0.1 0.1" rotation="0 0 0" 
+        animation="property: rotation; to: 0 360 0; dur: 5000; loop: true; easing: linear"
+        class="clickable" food-clickable="foodId: lele">
+      </a-gltf-model>
+
+      <!-- Ikan: Top Right -->
+      <a-gltf-model id="obj-ikan" src="#ikan" position="0.1 0.35 -1.45" scale="0.07 0.07 0.07" rotation="0 -40 0" 
+        animation="property: rotation; to: 0 360 0; dur: 4500; loop: true; easing: linear"
+        class="clickable" food-clickable="foodId: ikan">
+      </a-gltf-model>
+
+      <!-- Hati Ayam: Bottom Left -->
+      <a-gltf-model id="obj-hati" src="#hati" position="1.35 0.45 0.25" scale="1.49 1.49 1.49" rotation="0 -5 0" 
+        animation="property: rotation; to: 0 360 0; dur: 4200; loop: true; easing: linear"
+        class="clickable" food-clickable="foodId: hati">
+      </a-gltf-model>
+
+      <!-- Daging Sapi: Bottom Right -->
+      <a-gltf-model id="obj-daging" src="#daging" position="0 0.25 1.6" scale="0.09 0.09 0.09" rotation="0 0 0" 
+        animation="property: rotation; to: 0 360 0; dur: 4800; loop: true; easing: linear"
+        class="clickable" food-clickable="foodId: daging">
+      </a-gltf-model>
+      
+    </a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const target = document.querySelector('#target');
+      const scanningGuide = document.querySelector('#scanning-guide');
+      const infoPanel = document.querySelector('#info-panel');
+      const closePanel = document.querySelector('#close-panel');
+
+      // Hide Loading Screen when AR is ready
+      document.querySelector('a-scene').addEventListener('arReady', () => {
+        document.getElementById('loading-screen').classList.add('hidden');
+      });
+
+      target.addEventListener("targetFound", () => {
+        scanningGuide.style.display = 'none';
+      });
+
+      target.addEventListener("targetLost", () => {
+        scanningGuide.style.display = 'flex';
+        infoPanel.classList.remove('visible');
+      });
+
+      closePanel.addEventListener('click', () => {
+        infoPanel.classList.remove('visible');
+      });
+    });
+  </script>
+</body>
+</html>

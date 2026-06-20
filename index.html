@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARES - Buku Saku AR Edukasi Stunting</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Nunito -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Icons (Lucide via unpkg/feather for simplicity) -->
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Nunito', 'sans-serif'] },
+          colors: {
+            ares: {
+              blue: '#1E3A8A',
+              lightBlue: '#3B82F6',
+              yellow: '#FACC15',
+              green: '#4ADE80',
+              red: '#EF4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Nunito', sans-serif; background-color: #F8FAFC; overflow-x: hidden; }
+    
+    /* Playful Button Effect */
+    .btn-playful {
+      transition: all 0.2s;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+    }
+    .btn-playful:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+    }
+    .btn-playful:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+    }
+
+    /* Floating Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-float-delayed { animation: float 3s ease-in-out 1.5s infinite; }
+    
+    /* Outline Text */
+    .text-outline {
+      text-shadow: 
+        -2px -2px 0 #FFF, 2px -2px 0 #FFF, 
+        -2px 2px 0 #FFF, 2px 2px 0 #FFF,
+        0 4px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body class="text-slate-800">
+
+  <!-- HERO SECTION -->
+  <header class="relative bg-white pt-12 pb-32 px-6 overflow-hidden">
+    <!-- Wavy Background Decoration -->
+    <div class="absolute top-0 left-0 w-full h-4 bg-ares-lightBlue"></div>
+    <div class="absolute -top-20 -left-20 w-64 h-64 bg-blue-100 rounded-full blur-3xl opacity-70"></div>
+    <div class="absolute top-10 right-10 w-32 h-32 bg-yellow-200 rounded-full blur-2xl opacity-60"></div>
+
+    <div class="max-w-4xl mx-auto text-center relative z-10 mt-8">
+      <div class="inline-block mb-6 bg-yellow-100 border-2 border-yellow-400 text-yellow-800 font-bold px-6 py-2 rounded-full transform -rotate-2">
+        Buku Saku Interaktif 🌟
+      </div>
+      
+      <h1 class="text-5xl md:text-7xl font-black text-ares-blue leading-tight mb-4 text-outline">
+        Augmented Reality <br />
+        <span class="relative inline-block mt-2">
+          <span class="relative z-10 text-ares-blue">Edukasi Stunting</span>
+          <span class="absolute bottom-2 left-0 w-full h-8 bg-ares-yellow -z-10 rounded-lg transform -skew-x-12"></span>
+        </span>
+      </h1>
+      
+      <p class="text-xl md:text-2xl font-bold text-slate-600 mt-6 max-w-2xl mx-auto">
+        Pindai halaman buku saku Anda dan temukan informasi 3D edukatif yang bermanfaat bagi keluarga!
+      </p>
+    </div>
+
+    <!-- Wavy SVG Divider -->
+    <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none">
+      <svg class="relative block w-full h-[80px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.08,130.83,130.61,200,121.15c60.3-8.28,121.1-27.1,180.7-39.73Z" fill="#EFF6FF"></path>
+      </svg>
+    </div>
+  </header>
+
+  <!-- MODULES SECTION -->
+  <section class="py-12 px-6 bg-blue-50 relative -mt-4">
+    <div class="max-w-6xl mx-auto">
+      
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-5xl font-black text-ares-blue">Silakan Pilih Halaman Buku Anda 👇</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- Modul 1 -->
+        <div class="bg-white rounded-[40px] p-8 border-4 border-dashed border-green-300 hover:border-solid hover:border-green-400 transition-all shadow-lg relative group animate-float">
+          <div class="absolute -top-6 -left-4 w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center font-black text-2xl border-4 border-white z-10 transform group-hover:rotate-12 transition-transform">1</div>
+          <div class="text-6xl text-center mb-4 mt-2">👧🏻</div>
+          <h3 class="text-2xl font-black text-green-600 text-center mb-2">Kenali Stunting</h3>
+          <p class="text-center font-bold text-slate-500 mb-6">Mari kenali perbedaan pertumbuhan anak secara langsung.</p>
+          <a href="./pages/hal1-kenali-stunting/index.html" class="block w-full text-center bg-green-500 text-white font-black py-4 rounded-2xl btn-playful border-2 border-green-600">
+            <i data-feather="camera" class="inline-block mr-2 w-5 h-5"></i> BUKA KAMERA AR
+          </a>
+        </div>
+
+        <!-- Modul 2 -->
+        <div class="bg-white rounded-[40px] p-8 border-4 border-dashed border-blue-300 hover:border-solid hover:border-blue-400 transition-all shadow-lg relative group animate-float-delayed">
+          <div class="absolute -top-6 -left-4 w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center font-black text-2xl border-4 border-white z-10 transform group-hover:-rotate-12 transition-transform">2</div>
+          <div class="text-6xl text-center mb-4 mt-2">🐟</div>
+          <h3 class="text-2xl font-black text-blue-600 text-center mb-2">Protein Hewani</h3>
+          <p class="text-center font-bold text-slate-500 mb-6">Sentuh objek makanan 3D untuk melihat kandungan gizinya.</p>
+          <a href="./pages/hal2-protein-hewani/index.html" class="block w-full text-center bg-blue-500 text-white font-black py-4 rounded-2xl btn-playful border-2 border-blue-600">
+            <i data-feather="camera" class="inline-block mr-2 w-5 h-5"></i> BUKA KAMERA AR
+          </a>
+        </div>
+
+        <!-- Modul 3 -->
+        <div class="bg-white rounded-[40px] p-8 border-4 border-dashed border-yellow-300 hover:border-solid hover:border-yellow-400 transition-all shadow-lg relative group animate-float">
+          <div class="absolute -top-6 -left-4 w-14 h-14 bg-yellow-400 text-white rounded-full flex items-center justify-center font-black text-2xl border-4 border-white z-10 transform group-hover:rotate-12 transition-transform">3</div>
+          <div class="text-6xl text-center mb-4 mt-2">🍽️</div>
+          <h3 class="text-2xl font-black text-yellow-500 text-center mb-2">Isi Piringku</h3>
+          <p class="text-center font-bold text-slate-500 mb-6">Panduan visual porsi makan gizi seimbang untuk keluarga.</p>
+          <a href="./pages/hal3-isi-piring/index.html" class="block w-full text-center bg-yellow-400 text-yellow-900 font-black py-4 rounded-2xl btn-playful border-2 border-yellow-500">
+            <i data-feather="camera" class="inline-block mr-2 w-5 h-5"></i> BUKA KAMERA AR
+          </a>
+        </div>
+
+        <!-- Modul 4 -->
+        <div class="bg-white rounded-[40px] p-8 border-4 border-dashed border-purple-300 hover:border-solid hover:border-purple-400 transition-all shadow-lg relative group md:col-span-1 lg:col-start-2 animate-float-delayed">
+          <div class="absolute -top-6 -left-4 w-14 h-14 bg-purple-500 text-white rounded-full flex items-center justify-center font-black text-2xl border-4 border-white z-10 transform group-hover:-rotate-12 transition-transform">4</div>
+          <div class="text-6xl text-center mb-4 mt-2">✅</div>
+          <h3 class="text-2xl font-black text-purple-600 text-center mb-2">5 Langkah Cegah</h3>
+          <p class="text-center font-bold text-slate-500 mb-6">Panduan 5 langkah penting untuk mencegah stunting.</p>
+          <a href="./pages/hal4-5langkah/index.html" class="block w-full text-center bg-purple-500 text-white font-black py-4 rounded-2xl btn-playful border-2 border-purple-600">
+            <i data-feather="camera" class="inline-block mr-2 w-5 h-5"></i> BUKA KAMERA AR
+          </a>
+        </div>
+
+        <!-- Modul 5 -->
+        <div class="bg-white rounded-[40px] p-8 border-4 border-dashed border-red-300 hover:border-solid hover:border-red-400 transition-all shadow-lg relative group md:col-span-2 lg:col-span-1 animate-float">
+          <div class="absolute -top-6 -left-4 w-14 h-14 bg-red-500 text-white rounded-full flex items-center justify-center font-black text-2xl border-4 border-white z-10 transform group-hover:rotate-12 transition-transform">5</div>
+          <div class="text-6xl text-center mb-4 mt-2">💡</div>
+          <h3 class="text-2xl font-black text-red-500 text-center mb-2">Mitos atau Fakta</h3>
+          <p class="text-center font-bold text-slate-500 mb-6">Mari uji dan tambah wawasan Anda tentang stunting!</p>
+          <a href="./pages/hal5-quiz/index.html" class="block w-full text-center bg-red-500 text-white font-black py-4 rounded-2xl btn-playful border-2 border-red-600">
+            <i data-feather="camera" class="inline-block mr-2 w-5 h-5"></i> BUKA KAMERA AR
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW TO USE SECTION -->
+  <section class="py-16 px-6 bg-white">
+    <div class="max-w-4xl mx-auto bg-yellow-50 rounded-[40px] border-4 border-yellow-300 p-8 shadow-xl">
+      <h2 class="text-3xl font-black text-center text-yellow-800 mb-8">Cara Menggunakan ARES 📖</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div>
+          <div class="w-16 h-16 mx-auto bg-white border-4 border-yellow-400 rounded-2xl flex items-center justify-center text-2xl mb-4 shadow-sm">1</div>
+          <h3 class="font-black text-lg text-slate-700">Pilih Halaman</h3>
+          <p class="font-semibold text-slate-500 text-sm">Pilih tombol yang halamannya ingin Anda baca di atas.</p>
+        </div>
+        <div>
+          <div class="w-16 h-16 mx-auto bg-white border-4 border-yellow-400 rounded-2xl flex items-center justify-center text-2xl mb-4 shadow-sm">2</div>
+          <h3 class="font-black text-lg text-slate-700">Izinkan Kamera</h3>
+          <p class="font-semibold text-slate-500 text-sm">Klik 'Allow' atau 'Izinkan' saat browser meminta akses kamera.</p>
+        </div>
+        <div>
+          <div class="w-16 h-16 mx-auto bg-white border-4 border-yellow-400 rounded-2xl flex items-center justify-center text-2xl mb-4 shadow-sm">3</div>
+          <h3 class="font-black text-lg text-slate-700">Arahkan ke Buku</h3>
+          <p class="font-semibold text-slate-500 text-sm">Arahkan kamera HP Anda ke gambar di buku saku tersebut.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-ares-blue py-8 text-center text-white border-t-8 border-ares-lightBlue mt-10">
+    <h3 class="text-2xl font-black text-yellow-300 mb-2">Keluarga Waspada, Blimbing Berdaya</h3>
+    <p class="font-bold text-blue-200">Sukoharjo Sehat © 2026</p>
+  </footer>
+
+  <script>
+    feather.replace();
+  </script>
+</body>
+</html>

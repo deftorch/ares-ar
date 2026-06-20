@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Isi Piringku - ARES Modul 3</title>
+  
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <link rel="stylesheet" href="../../shared/ar-styles.css">
+  
+  <style>
+    .highlight-msg {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(245, 158, 11, 0.9);
+      color: white;
+      padding: 1rem;
+      border-radius: 16px;
+      font-weight: 700;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+      opacity: 0;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+      width: 80%;
+      max-width: 350px;
+    }
+    .highlight-msg.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+
+  <script>
+    AFRAME.registerComponent('plate-manager', {
+      init: function () {
+        this.foodItems = this.el.querySelectorAll('.food-item');
+        let visibleCount = 0;
+        
+        // Staggered animation for food items appearing
+        this.el.sceneEl.addEventListener('targetFound', () => {
+          this.foodItems.forEach((item, index) => {
+            setTimeout(() => {
+              item.setAttribute('visible', 'true');
+              item.emit('appear');
+              visibleCount++;
+              
+              if (visibleCount === this.foodItems.length) {
+                setTimeout(() => {
+                  document.getElementById('highlight-msg').classList.add('visible');
+                }, 1000);
+              }
+            }, (index + 1) * 800);
+          });
+        });
+
+        this.el.sceneEl.addEventListener('targetLost', () => {
+          this.foodItems.forEach(item => item.setAttribute('visible', 'false'));
+          visibleCount = 0;
+          document.getElementById('highlight-msg').classList.remove('visible');
+        });
+      }
+    });
+
+    AFRAME.registerComponent('food-info', {
+      schema: { group: {type: 'string'} },
+      init: function () {
+        const info = {
+          'karbo': { title: 'Karbohidrat', desc: 'Sumber energi utama untuk aktivitas anak sehari-hari.' },
+          'protein': { title: 'Protein Hewani', desc: 'Membantu pertumbuhan sel dan tinggi badan.' },
+          'sayur': { title: 'Sayuran', desc: 'Sumber vitamin, mineral, dan serat.' },
+          'buah': { title: 'Buah-buahan', desc: 'Kaya akan Vitamin C dan antioksidan alami.' }
+        };
+
+        this.el.addEventListener('click', () => {
+          const data = info[this.data.group];
+          document.getElementById('panel-title').textContent = data.title;
+          document.getElementById('panel-content-text').textContent = data.desc;
+          document.getElementById('info-panel').classList.add('visible');
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  
+  <!-- Loading Screen (Global UX) -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loader-spinner"></div>
+    <h2>Memuat Keajaiban AR...</h2>
+    <p>Mohon tunggu sebentar, kami sedang menyiapkan Piring 3D dan memuat kamera Anda.</p>
+    <div class="permission-note">📷 Jika muncul notifikasi, izinkan akses kamera.</div>
+  </div>
+
+  <div class="ar-ui-layer">
+    <div class="top-nav">
+      <a href="../../index.html" class="back-btn interactive"><span>←</span> Kembali</a>
+    </div>
+    <div id="scanning-guide" class="scanning-overlay">
+      <div class="scanning-text">Arahkan ke halaman 3 (Isi Piring)</div>
+    </div>
+  </div>
+
+  <div id="highlight-msg" class="highlight-msg">
+    "Setiap kali makan, usahakan selalu ada PROTEIN HEWANI!"
+  </div>
+
+  <!-- Dynamic Info Panel -->
+  <div id="info-panel" class="info-panel">
+    <div class="panel-header">
+      <h3 id="panel-title" class="panel-title">Kelompok Makanan</h3>
+      <button id="close-panel" class="close-btn interactive">✕</button>
+    </div>
+    <div class="panel-content">
+      <p id="panel-content-text"></p>
+    </div>
+  </div>
+
+  <a-scene 
+    mindar-image="imageTargetSrc: ./hal3.mind; autoStart: true; uiScanning: #scanning-guide" 
+    color-space="sRGB" 
+    renderer="colorManagement: true; physicallyCorrectLights: true" 
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false"
+    gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/; basisTranscoderPath: https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/libs/basis/; meshoptDecoderPath: https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js;">
+    
+    <a-assets>
+      <a-asset-item id="piring" src="../../models/piring_makanan.glb"></a-asset-item>
+      <!-- We will just use placeholders by changing scale of generic geometry if glb fails, but code maps to glb -->
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false">
+      <a-entity cursor="fuse: false; rayOrigin: mouse;" raycaster="objects: .clickable"></a-entity>
+    </a-camera>
+
+    <a-entity id="target" mindar-image-target="targetIndex: 0" plate-manager>
+      
+      <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+      <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
+      
+      <!-- Piring (Base) -->
+      <a-gltf-model src="#piring" position="0 0.1 0" scale="0.08 0.08 0.08" rotation="0 5 0"></a-gltf-model>
+
+      <!-- Food groups (will appear sequentially) -->
+      <!-- Top Left: Karbo -->
+      <a-entity class="food-item clickable" food-info="group: karbo" visible="false" position="-0.15 0.15 0.05"
+        animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
+        <a-sphere color="#fef08a" radius="0.1" opacity="0.9"></a-sphere>
+        <a-text value="Karbohidrat" position="0 0.15 0" align="center" color="#ca8a04" scale="0.2 0.2 0.2"></a-text>
+      </a-entity>
+
+      <!-- Top Right: Protein -->
+      <a-entity class="food-item clickable" food-info="group: protein" visible="false" position="0.15 0.15 0.05"
+        animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
+        <a-sphere color="#fca5a5" radius="0.1" opacity="0.9"></a-sphere>
+        <a-text value="Protein" position="0 0.15 0" align="center" color="#dc2626" scale="0.2 0.2 0.2"></a-text>
+      </a-entity>
+
+      <!-- Bottom Left: Sayur -->
+      <a-entity class="food-item clickable" food-info="group: sayur" visible="false" position="-0.15 -0.15 0.05"
+        animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
+        <a-sphere color="#86efac" radius="0.1" opacity="0.9"></a-sphere>
+        <a-text value="Sayuran" position="0 -0.15 0" align="center" color="#16a34a" scale="0.2 0.2 0.2"></a-text>
+      </a-entity>
+
+      <!-- Bottom Right: Buah -->
+      <a-entity class="food-item clickable" food-info="group: buah" visible="false" position="0.15 -0.15 0.05"
+        animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
+        <a-sphere color="#fcd34d" radius="0.1" opacity="0.9"></a-sphere>
+        <a-text value="Buah" position="0 -0.15 0" align="center" color="#d97706" scale="0.2 0.2 0.2"></a-text>
+      </a-entity>
+      
+    </a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const closePanel = document.querySelector('#close-panel');
+      const infoPanel = document.querySelector('#info-panel');
+
+      // Hide Loading Screen when AR is ready
+      document.querySelector('a-scene').addEventListener('arReady', () => {
+        document.getElementById('loading-screen').classList.add('hidden');
+      });
+
+      closePanel.addEventListener('click', () => {
+        infoPanel.classList.remove('visible');
+      });
+    });
+  </script>
+</body>
+</html>

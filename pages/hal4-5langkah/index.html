@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>5 Langkah Cegah - ARES Modul 4</title>
+  
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <link rel="stylesheet" href="../../shared/ar-styles.css">
+  
+  <style>
+    /* Overlay positioning for Checklist */
+    .checklist-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      display: none;
+      z-index: 200;
+    }
+    .checklist-wrapper.visible {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+    .cl-header { text-align: center; margin-bottom: 1.5rem; }
+    .cl-title { font-size: 1.5rem; font-weight: 900; color: var(--primary-dark); margin: 0 0 0.5rem 0; }
+    .cl-progress { font-size: 1rem; color: var(--secondary-dark); font-weight: 900; }
+    .success-msg { text-align: center; color: var(--green-dark); font-weight: 900; font-size: 1.2rem; margin-top: 1rem; display: none; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -45%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Loading Screen (Global UX) -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loader-spinner"></div>
+    <h2>Memuat Keajaiban AR...</h2>
+    <p>Mohon tunggu sebentar, kami sedang menyiapkan fitur Checklist AR dan memuat kamera.</p>
+    <div class="permission-note">📷 Jika muncul notifikasi, izinkan akses kamera.</div>
+  </div>
+
+  <div class="ar-ui-layer">
+    <div class="top-nav">
+      <a href="../../index.html" class="back-btn interactive"><span>←</span> Kembali</a>
+    </div>
+    <div id="scanning-guide" class="scanning-overlay">
+      <div class="scanning-text">Arahkan ke halaman 4 (5 Langkah)</div>
+    </div>
+  </div>
+
+  <!-- HTML Overlay Checklist -->
+  <div id="checklist-wrapper" class="checklist-wrapper interactive">
+    <div class="checklist-container">
+      <div class="cl-header">
+        <h3 class="cl-title">5 Langkah Cegah</h3>
+        <div id="progress-text" class="cl-progress">0/5 Langkah Selesai</div>
+      </div>
+
+      <div class="cl-items-list">
+        <div class="cl-item" data-id="1">
+          <div class="cl-checkbox"></div>
+          <div class="cl-content">
+            <h4>1. Minum Tablet Tambah Darah (TTD)</h4>
+            <p>Remaja putri & ibu hamil rutin minum TTD setiap hari untuk cegah anemia.</p>
+          </div>
+        </div>
+        <div class="cl-item" data-id="2">
+          <div class="cl-checkbox"></div>
+          <div class="cl-content">
+            <h4>2. Konsumsi Protein Hewani</h4>
+            <p>Makan telur, ikan, ayam, hati, atau daging setiap hari untuk pertumbuhan anak.</p>
+          </div>
+        </div>
+        <div class="cl-item" data-id="3">
+          <div class="cl-checkbox"></div>
+          <div class="cl-content">
+            <h4>3. ASI Eksklusif 6 Bulan</h4>
+            <p>Hanya berikan ASI tanpa tambahan makanan/minuman lain di 6 bulan pertama.</p>
+          </div>
+        </div>
+        <div class="cl-item" data-id="4">
+          <div class="cl-checkbox"></div>
+          <div class="cl-content">
+            <h4>4. MPASI Bergizi</h4>
+            <p>Mulai usia 6 bulan, berikan MPASI bergizi seimbang, bervariasi, dan aman.</p>
+          </div>
+        </div>
+        <div class="cl-item" data-id="5">
+          <div class="cl-checkbox"></div>
+          <div class="cl-content">
+            <h4>5. Rutin ke Posyandu</h4>
+            <p>Timbang berat badan & ukur tinggi badan tiap bulan untuk pantau tumbuh kembang.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="success-msg" class="success-msg">
+        🎉 Luar biasa! Semua langkah tuntas!
+      </div>
+    </div>
+  </div>
+
+  <a-scene 
+    mindar-image="imageTargetSrc: ./hal4.mind; autoStart: true; uiScanning: #scanning-guide" 
+    color-space="sRGB" 
+    renderer="colorManagement: true" 
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false"
+    gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/; basisTranscoderPath: https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/libs/basis/; meshoptDecoderPath: https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js;">
+    
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-entity id="target" mindar-image-target="targetIndex: 0"></a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const target = document.querySelector('#target');
+      const scanningGuide = document.querySelector('#scanning-guide');
+      const checklistWrapper = document.querySelector('#checklist-wrapper');
+      const items = document.querySelectorAll('.cl-item');
+      const progressText = document.querySelector('#progress-text');
+      const successMsg = document.querySelector('#success-msg');
+      
+      let checkedCount = 0;
+
+      // Hide Loading Screen when AR is ready
+      document.querySelector('a-scene').addEventListener('arReady', () => {
+        document.getElementById('loading-screen').classList.add('hidden');
+      });
+
+      target.addEventListener("targetFound", () => {
+        scanningGuide.style.display = 'none';
+        checklistWrapper.classList.add('visible');
+      });
+
+      target.addEventListener("targetLost", () => {
+        scanningGuide.style.display = 'flex';
+        checklistWrapper.classList.remove('visible');
+      });
+
+      items.forEach(item => {
+        item.addEventListener('click', () => {
+          if (!item.classList.contains('checked')) {
+            item.classList.add('checked');
+            checkedCount++;
+            progressText.textContent = `${checkedCount}/5 Langkah Selesai`;
+            
+            if (checkedCount === 5) {
+              successMsg.style.display = 'block';
+            }
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

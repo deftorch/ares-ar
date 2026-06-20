@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Kenali Stunting - ARES Modul 1</title>
+  
+  <!-- A-Frame and MindAR Scripts -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../shared/ar-styles.css">
+  
+  <style>
+    /* Custom styles for this specific page */
+    .compare-btn-container {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: auto;
+      z-index: 10;
+      width: 80%;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  
+  <!-- Loading Screen (Global UX) -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loader-spinner"></div>
+    <h2>Memuat Keajaiban AR...</h2>
+    <p>Mohon tunggu sebentar, kami sedang menyiapkan model 3D dan memuat kamera Anda.</p>
+    <div class="permission-note">📷 Jika muncul notifikasi, izinkan akses kamera.</div>
+  </div>
+
+  <!-- UI Layer (Overlays the 3D scene) -->
+  <div class="ar-ui-layer">
+    <div class="top-nav">
+      <a href="../../index.html" class="back-btn interactive">
+        <span>←</span> Kembali
+      </a>
+    </div>
+    
+    <div id="scanning-guide" class="scanning-overlay">
+      <div class="scanning-text">Arahkan kamera ke halaman 1 buku saku</div>
+    </div>
+  </div>
+
+  <!-- Compare Button (Hidden until target found) -->
+  <div id="compare-btn-container" class="compare-btn-container" style="display: none;">
+    <button id="compare-btn" class="btn-primary">Bandingkan Kondisi</button>
+  </div>
+
+  <!-- Info Panel -->
+  <div id="info-panel" class="info-panel">
+    <div class="panel-header">
+      <h3 class="panel-title">Fakta Stunting</h3>
+      <button id="close-panel" class="close-btn">✕</button>
+    </div>
+    <div class="panel-content">
+      <p>Stunting bukan sekadar anak pendek, melainkan kondisi gagal tumbuh pada anak balita akibat kekurangan gizi kronis terutama pada 1.000 Hari Pertama Kehidupan (HPK).</p>
+      <h4>Dampak Jangka Panjang:</h4>
+      <ul>
+        <li>Kecerdasan otak tidak optimal</li>
+        <li>Rentan terhadap penyakit</li>
+        <li>Produktivitas menurun saat dewasa</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- AR Scene -->
+  <a-scene 
+    mindar-image="imageTargetSrc: ./hal1.mind; autoStart: true; uiScanning: #scanning-guide" 
+    color-space="sRGB" 
+    renderer="colorManagement: true; physicallyCorrectLights: true" 
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false"
+    gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/; basisTranscoderPath: https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/libs/basis/; meshoptDecoderPath: https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js;">
+    
+    <a-assets>
+      <!-- We use dummy GLB references as per the plan -->
+      <a-asset-item id="anak-sehat" src="../../models/anak_sehat.glb"></a-asset-item>
+      <a-asset-item id="anak-stunting" src="../../models/anak_stunting.glb"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Target 0 is the first image in the .mind file -->
+    <a-entity id="target" mindar-image-target="targetIndex: 0">
+      
+      <!-- Lighting -->
+      <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+      <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
+      
+      <!-- Sehat Model -->
+      <a-entity id="model-sehat" 
+                gltf-model="#anak-sehat" 
+                position="-0.85 0 0" 
+                scale="1.73 1.73 1.73" 
+                rotation="0 0 0">
+        <a-text value="Tumbuh Optimal" position="0 1.2 0" align="center" color="#10b981" scale="0.5 0.5 0.5"></a-text>
+      </a-entity>
+
+      <!-- Stunting Model -->
+      <a-entity id="model-stunting" 
+                gltf-model="#anak-stunting" 
+                position="0.8 0 0.35" 
+                scale="0.54 0.54 0.54" 
+                rotation="0 0 0">
+        <a-text value="Stunting" position="0 1.2 0" align="center" color="#ef4444" scale="0.5 0.5 0.5"></a-text>
+      </a-entity>
+      
+    </a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const target = document.querySelector('#target');
+      const scanningGuide = document.querySelector('#scanning-guide');
+      const compareBtnContainer = document.querySelector('#compare-btn-container');
+      const compareBtn = document.querySelector('#compare-btn');
+      const infoPanel = document.querySelector('#info-panel');
+      const closePanel = document.querySelector('#close-panel');
+
+      // When target is found
+      target.addEventListener("targetFound", () => {
+        scanningGuide.style.display = 'none';
+        compareBtnContainer.style.display = 'block';
+      });
+
+      // When target is lost
+      target.addEventListener("targetLost", () => {
+        scanningGuide.style.display = 'flex';
+        compareBtnContainer.style.display = 'none';
+        infoPanel.classList.remove('visible');
+      });
+
+      // AR Engine Ready (Hide Loading Screen)
+      document.querySelector('a-scene').addEventListener('arReady', () => {
+        document.getElementById('loading-screen').classList.add('hidden');
+      });
+
+      // UI Interactions
+      compareBtn.addEventListener('click', () => {
+        infoPanel.classList.add('visible');
+      });
+
+      closePanel.addEventListener('click', () => {
+        infoPanel.classList.remove('visible');
+      });
+    });
+  </script>
+</body>
+</html>

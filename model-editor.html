@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARES - Multi-Model Visual Editor</title>
+  
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Nunito', sans-serif; margin: 0; overflow: hidden; background: #1e293b; }
+    
+    #scene-container { position: absolute; top: 0; left: 0; right: 400px; bottom: 0; }
+    #ui-panel { position: absolute; top: 0; right: 0; width: 400px; height: 100vh; background: white; box-shadow: -5px 0 25px rgba(0,0,0,0.2); z-index: 10; display: flex; flex-direction: column; }
+    
+    input[type=range] { width: 100%; margin-top: 0.25rem; }
+    
+    #ui-panel::-webkit-scrollbar { width: 6px; }
+    #ui-panel::-webkit-scrollbar-track { background: #f1f1f1; }
+    #ui-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    #ui-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    @media (max-width: 768px) {
+      #scene-container { right: 0; bottom: 50vh; }
+      #ui-panel { top: 50vh; width: 100%; height: 50vh; }
+    }
+
+    /* Style for file inputs */
+    .file-input-custom::-webkit-file-upload-button {
+      background: #EFF6FF; color: #1D4ED8; font-weight: bold; padding: 4px 12px; border-radius: 12px; border: none; cursor: pointer; margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 3D Scene Area -->
+  <div id="scene-container">
+    <a-scene embedded background="color: #334155" renderer="colorManagement: true" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/; basisTranscoderPath: https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/libs/basis/; meshoptDecoderPath: https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js;">
+      
+      <a-entity position="0 1.5 4">
+        <a-camera look-controls wasd-controls></a-camera>
+      </a-entity>
+
+      <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+      <a-light type="directional" color="#ffffff" intensity="0.5" position="-1 2 1"></a-light>
+
+      <!-- Target Area Guide (Matches AR Image Target 3:4) -->
+      <a-entity position="0 0 0" rotation="-90 0 0">
+        <a-plane width="2" height="2.66" color="#0f172a" wireframe="true" position="0 0 0.01"></a-plane>
+        <a-plane width="2" height="2.66" color="#cbd5e1" opacity="0.1"></a-plane>
+      </a-entity>
+
+      <a-entity id="axis-helper" position="0 0 0">
+        <a-cylinder color="red" height="1" radius="0.01" position="0.5 0 0" rotation="0 0 90"></a-cylinder>
+        <a-cylinder color="green" height="1" radius="0.01" position="0 0.5 0"></a-cylinder>
+        <a-cylinder color="blue" height="1" radius="0.01" position="0 0 0.5" rotation="90 0 0"></a-cylinder>
+      </a-entity>
+
+      <!-- Dynamic Models will be appended here -->
+      <a-entity id="models-container"></a-entity>
+    </a-scene>
+  </div>
+
+  <!-- UI Panel -->
+  <div id="ui-panel">
+    <div class="bg-blue-600 text-white p-4 shrink-0">
+      <h2 class="text-xl font-black flex justify-between items-center">
+        ARES Multi-Model 🛠️
+        <button id="btn-add-model" class="bg-yellow-400 hover:bg-yellow-500 text-blue-900 text-sm py-1 px-3 rounded-full font-bold shadow transition-colors">
+          + Tambah Model
+        </button>
+      </h2>
+      <p class="text-xs font-semibold opacity-80 mt-1">Gabungkan & atur posisi banyak model 3D sekaligus.</p>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4 bg-slate-100" id="models-list">
+      <!-- Model Cards will be injected by JS -->
+    </div>
+
+    <!-- Bottom Result Area -->
+    <div class="p-4 bg-white border-t border-slate-200 shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+      <label class="block text-sm font-bold text-slate-700 mb-1">Kode Gabungan (HTML)</label>
+      <div class="relative">
+        <textarea id="code-output" readonly rows="4" class="w-full text-xs font-mono bg-slate-800 text-green-400 p-3 rounded-xl border-0 resize-none"></textarea>
+        <button id="btn-copy" class="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-3 rounded-lg shadow-md transition-colors">
+          Salin Kode
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const modelsListEl = document.getElementById('models-list');
+      const modelsContainerEl = document.getElementById('models-container');
+      const codeOutputEl = document.getElementById('code-output');
+      const btnAdd = document.getElementById('btn-add-model');
+      const btnCopy = document.getElementById('btn-copy');
+
+      let models = [];
+      let modelCounter = 0;
+
+      function createModelSlot() {
+        modelCounter++;
+        const id = modelCounter;
+        const newModel = {
+          id: id,
+          filename: `model_${id}.glb`,
+          url: '',
+          scale: 1, posX: 0, posY: 0, posZ: 0, rotX: 0, rotY: 0, rotZ: 0
+        };
+        models.push(newModel);
+        
+        // Add A-Frame entity
+        const entity = document.createElement('a-gltf-model');
+        entity.setAttribute('id', `aframe-model-${id}`);
+        entity.setAttribute('position', '0 0 0');
+        entity.setAttribute('scale', '1 1 1');
+        modelsContainerEl.appendChild(entity);
+
+        renderUI();
+        updateAFrameAndCode();
+      }
+
+      function removeModel(id) {
+        models = models.filter(m => m.id !== id);
+        const entity = document.getElementById(`aframe-model-${id}`);
+        if(entity) entity.remove();
+        renderUI();
+        updateAFrameAndCode();
+      }
+
+      function updateAFrameAndCode() {
+        let codeLines = [];
+        
+        models.forEach(m => {
+          // Update A-Frame
+          const entity = document.getElementById(`aframe-model-${m.id}`);
+          if(entity) {
+            if(m.url) entity.setAttribute('src', m.url);
+            entity.setAttribute('scale', `${m.scale} ${m.scale} ${m.scale}`);
+            entity.setAttribute('position', `${m.posX} ${m.posY} ${m.posZ}`);
+            entity.setAttribute('rotation', `${m.rotX} ${m.rotY} ${m.rotZ}`);
+          }
+
+          // Generate Code Snippet
+          codeLines.push(`<a-gltf-model src="../../models/${m.filename}" position="${m.posX} ${m.posY} ${m.posZ}" scale="${m.scale} ${m.scale} ${m.scale}" rotation="${m.rotX} ${m.rotY} ${m.rotZ}"></a-gltf-model>`);
+        });
+
+        codeOutputEl.value = codeLines.join('\n');
+      }
+
+      function renderUI() {
+        modelsListEl.innerHTML = '';
+        
+        if (models.length === 0) {
+          modelsListEl.innerHTML = `<div class="text-center text-slate-400 font-bold mt-10">Belum ada model.<br>Klik "+ Tambah Model" di atas.</div>`;
+          return;
+        }
+
+        models.forEach((m, index) => {
+          const card = document.createElement('div');
+          card.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-4";
+          
+          card.innerHTML = `
+            <div class="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+              <h3 class="font-black text-blue-800">Model ${index + 1}</h3>
+              <button class="btn-delete text-red-500 hover:text-red-700 text-xs font-bold px-2 py-1 bg-red-50 rounded-lg">Hapus</button>
+            </div>
+            
+            <input type="file" accept=".glb" class="file-input block w-full text-xs text-slate-500 mb-3 file-input-custom">
+            
+            <div class="space-y-2">
+              ${createControlGroup(m.id, 'Skala', 'scale', 0.01, 5, 0.01, m.scale)}
+              ${createControlGroup(m.id, 'Posisi X (Kiri/Kanan)', 'posX', -2, 2, 0.05, m.posX)}
+              ${createControlGroup(m.id, 'Posisi Y (Tinggi)', 'posY', -2, 2, 0.05, m.posY)}
+              ${createControlGroup(m.id, 'Posisi Z (Maju/Mundur)', 'posZ', -2, 2, 0.05, m.posZ)}
+              ${createControlGroup(m.id, 'Rotasi Y (Kiri/Kanan)', 'rotY', -180, 180, 5, m.rotY)}
+            </div>
+          `;
+
+          // Event Listeners for this card
+          const fileInput = card.querySelector('.file-input');
+          fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+              m.url = URL.createObjectURL(file);
+              m.filename = file.name;
+              updateAFrameAndCode();
+            }
+          });
+
+          card.querySelector('.btn-delete').addEventListener('click', () => removeModel(m.id));
+
+          ['scale', 'posX', 'posY', 'posZ', 'rotY'].forEach(key => {
+            const slider = card.querySelector(`#slider-${key}-${m.id}`);
+            const num = card.querySelector(`#num-${key}-${m.id}`);
+            
+            slider.addEventListener('input', (e) => {
+              let val = parseFloat(e.target.value);
+              num.value = val;
+              m[key] = val;
+              updateAFrameAndCode();
+            });
+
+            num.addEventListener('input', (e) => {
+              let val = parseFloat(e.target.value);
+              if(isNaN(val)) val = 0;
+              slider.value = val;
+              m[key] = val;
+              updateAFrameAndCode();
+            });
+          });
+
+          modelsListEl.appendChild(card);
+        });
+      }
+
+      function createControlGroup(id, label, key, min, max, step, val) {
+        return `
+          <div class="bg-slate-50 p-2 rounded-xl">
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-xs font-bold text-slate-600">${label}</label>
+              <input type="number" id="num-${key}-${id}" value="${val}" step="${step}" class="w-16 p-1 border rounded text-right text-xs font-bold">
+            </div>
+            <input type="range" id="slider-${key}-${id}" min="${min}" max="${max}" step="${step}" value="${val}">
+          </div>
+        `;
+      }
+
+      // Init
+      btnAdd.addEventListener('click', createModelSlot);
+      
+      btnCopy.addEventListener('click', () => {
+        codeOutputEl.select();
+        document.execCommand('copy');
+        const origText = btnCopy.innerText;
+        btnCopy.innerText = "Tersalin! ✓";
+        btnCopy.classList.replace('bg-blue-600', 'bg-green-600');
+        setTimeout(() => {
+          btnCopy.innerText = origText;
+          btnCopy.classList.replace('bg-green-600', 'bg-blue-600');
+        }, 2000);
+      });
+
+      // Add one model by default
+      createModelSlot();
+    });
+  </script>
+</body>
+</html>
