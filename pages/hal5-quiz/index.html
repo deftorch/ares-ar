@@ -20,6 +20,17 @@
       z-index: 200;
     }
     
+    .quiz-container {
+      position: relative;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    /* Scrollbar */
+    .quiz-container::-webkit-scrollbar { width: 6px; }
+    .quiz-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .quiz-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    
     .quiz-wrapper.visible {
       display: block;
       animation: fadeIn 0.4s ease-out;
@@ -109,6 +120,7 @@
 
   <div class="quiz-wrapper interactive" id="quiz-wrapper">
     <div class="quiz-container">
+      <button id="btn-close-quiz" class="close-btn interactive" style="position: absolute; top: -15px; right: -15px; z-index: 10;">✕</button>
       
       <!-- Start Screen -->
       <div id="start-screen" style="text-align: center;">
@@ -177,6 +189,7 @@
       const btnFakta = document.querySelector('#btn-fakta');
       const btnNext = document.querySelector('#btn-next');
       const btnRestart = document.querySelector('#btn-restart');
+      const btnCloseQuiz = document.querySelector('#btn-close-quiz');
       
       const qCounter = document.querySelector('#q-counter');
       const qText = document.querySelector('#q-text');
@@ -199,8 +212,16 @@
       });
 
       target.addEventListener("targetLost", () => {
-        scanningGuide.style.display = 'flex';
+        // Sticky UI: don't hide the quiz!
+      });
+
+      btnCloseQuiz.addEventListener('click', () => {
         quizWrapper.classList.remove('visible');
+        scanningGuide.style.display = 'flex';
+        // Reset to start screen
+        startScreen.style.display = 'block';
+        questionScreen.style.display = 'none';
+        resultContainer.style.display = 'none';
       });
 
       fetch('quiz-data.json')
