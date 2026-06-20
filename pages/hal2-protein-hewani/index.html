@@ -25,6 +25,35 @@
       padding: 1rem;
     }
     .recipe-list h4 { margin-top: 0; color: #10b981; }
+    .food-buttons {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 10px;
+      z-index: 1000;
+    }
+    .food-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #3b82f6;
+      color: #1e3a8a;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .food-btn:active {
+      transform: scale(0.95);
+      background: #3b82f6;
+      color: white;
+    }
   </style>
 
   <script>
@@ -77,25 +106,6 @@
       }
     };
 
-    // Component to handle clicking on food models
-    AFRAME.registerComponent('food-clickable', {
-      schema: { foodId: {type: 'string'} },
-      init: function () {
-        this.el.addEventListener('click', () => {
-          const data = foodData[this.data.foodId];
-          if(data) {
-            document.getElementById('panel-title').textContent = data.title;
-            document.getElementById('panel-gizi').textContent = data.gizi;
-            document.getElementById('panel-manfaat').textContent = data.manfaat;
-            
-            const olahanHtml = data.olahan.map(item => `<li>${item}</li>`).join('');
-            document.getElementById('panel-olahan').innerHTML = `<div class="recipe-list"><h4>Ide Olahan:</h4><ul>${olahanHtml}</ul></div>`;
-            
-            document.getElementById('info-panel').classList.add('visible');
-          }
-        });
-      }
-    });
   </script>
 </head>
 <body>
@@ -115,6 +125,13 @@
     </div>
     <div id="scanning-guide" class="scanning-overlay">
       <div class="scanning-text">Arahkan ke halaman 2 (Protein Hewani)</div>
+    </div>
+    <div id="food-buttons-container" class="food-buttons" style="display: none;">
+      <button class="food-btn" data-food="telur">Telur Ayam</button>
+      <button class="food-btn" data-food="lele">Ikan Lele</button>
+      <button class="food-btn" data-food="ikan">Ikan Laut</button>
+      <button class="food-btn" data-food="hati">Hati Ayam</button>
+      <button class="food-btn" data-food="daging">Daging Sapi</button>
     </div>
   </div>
 
@@ -147,10 +164,8 @@
       <a-asset-item id="daging" src="../../models/daging_sapi.glb"></a-asset-item>
     </a-assets>
 
-    <!-- Raycaster for clicking objects -->
-    <a-camera position="0 0 0" look-controls="enabled: false">
-      <a-entity cursor="fuse: false; rayOrigin: mouse;" raycaster="objects: .clickable"></a-entity>
-    </a-camera>
+    <!-- Simple camera without raycaster -->
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity id="target" mindar-image-target="targetIndex: 0"></a-entity>
     
@@ -159,35 +174,11 @@
       <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
       <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
       
-      <!-- Telur: Top Left -->
       <a-gltf-model id="obj-telur" src="#telur" position="0 0.05 -0.6" scale="3.26 3.26 3.26" rotation="90 0 0"></a-gltf-model>
-      <a-circle position="0 0.05 -0.5" radius="0.2" color="#ffffff" opacity="0.4" material="shader: flat; transparent: true" class="clickable" food-clickable="foodId: telur">
-        <a-text value="INFO" align="center" width="1.5" position="0 0 0.01" color="#1e293b" font="kelsonsans" weight="bold"></a-text>
-      </a-circle>
-
-      <!-- Lele: Top Center -->
       <a-gltf-model id="obj-lele" src="#lele" position="-1.05 0 -0.75" scale="0.06 0.06 0.06" rotation="90 5 0"></a-gltf-model>
-      <a-circle position="-1.05 0 -0.65" radius="0.2" color="#ffffff" opacity="0.4" material="shader: flat; transparent: true" class="clickable" food-clickable="foodId: lele">
-        <a-text value="INFO" align="center" width="1.5" position="0 0 0.01" color="#1e293b" font="kelsonsans" weight="bold"></a-text>
-      </a-circle>
-
-      <!-- Ikan: Top Right -->
       <a-gltf-model id="obj-ikan" src="#ikan" position="1.1 0.1 -0.5" scale="0.06 0.06 0.06" rotation="-90 180 0"></a-gltf-model>
-      <a-circle position="1.1 0.1 -0.4" radius="0.2" color="#ffffff" opacity="0.4" material="shader: flat; transparent: true" class="clickable" food-clickable="foodId: ikan">
-        <a-text value="INFO" align="center" width="1.5" position="0 0 0.01" color="#1e293b" font="kelsonsans" weight="bold"></a-text>
-      </a-circle>
-
-      <!-- Hati Ayam: Bottom Left -->
       <a-gltf-model id="obj-hati" src="#hati" position="0.1 1.15 -0.45" scale="1.18 1.18 1.18" rotation="90 0 0"></a-gltf-model>
-      <a-circle position="0.1 1.15 -0.35" radius="0.2" color="#ffffff" opacity="0.4" material="shader: flat; transparent: true" class="clickable" food-clickable="foodId: hati">
-        <a-text value="INFO" align="center" width="1.5" position="0 0 0.01" color="#1e293b" font="kelsonsans" weight="bold"></a-text>
-      </a-circle>
-
-      <!-- Daging Sapi: Bottom Right -->
       <a-gltf-model id="obj-daging" src="#daging" position="0 -1.15 -0.7" scale="0.07 0.07 0.07" rotation="90 0 0"></a-gltf-model>
-      <a-circle position="0 -1.15 -0.6" radius="0.2" color="#ffffff" opacity="0.4" material="shader: flat; transparent: true" class="clickable" food-clickable="foodId: daging">
-        <a-text value="INFO" align="center" width="1.5" position="0 0 0.01" color="#1e293b" font="kelsonsans" weight="bold"></a-text>
-      </a-circle>
       
     </a-entity>
   </a-scene>
@@ -200,6 +191,8 @@
       const closePanel = document.querySelector('#close-panel');
       const btnRescan = document.querySelector('#btn-rescan');
       const modelsContainer = document.querySelector('#models-container');
+      const foodBtnsContainer = document.querySelector('#food-buttons-container');
+      const foodBtns = document.querySelectorAll('.food-btn');
 
       // Hide Loading Screen when AR is ready
       document.querySelector('a-scene').addEventListener('arReady', () => {
@@ -210,6 +203,7 @@
         window.isTrackingActive = true;
         scanningGuide.style.display = 'none';
         btnRescan.style.display = 'block';
+        foodBtnsContainer.style.display = 'flex';
       });
 
       // Target lost does NOTHING now, so models freeze on screen
@@ -222,12 +216,30 @@
         window.isTrackingActive = false;
         modelsContainer.setAttribute('visible', false);
         btnRescan.style.display = 'none';
+        foodBtnsContainer.style.display = 'none';
         scanningGuide.style.display = 'flex';
         infoPanel.classList.remove('visible');
       });
 
       closePanel.addEventListener('click', () => {
         infoPanel.classList.remove('visible');
+      });
+
+      // Logic for new HTML buttons
+      foodBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const data = foodData[btn.dataset.food];
+          if(data) {
+            document.getElementById('panel-title').textContent = data.title;
+            document.getElementById('panel-gizi').textContent = data.gizi;
+            document.getElementById('panel-manfaat').textContent = data.manfaat;
+            
+            const olahanHtml = data.olahan.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('panel-olahan').innerHTML = `<div class="recipe-list"><h4>Ide Olahan:</h4><ul>${olahanHtml}</ul></div>`;
+            
+            infoPanel.classList.add('visible');
+          }
+        });
       });
     });
   </script>
