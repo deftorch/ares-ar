@@ -31,7 +31,13 @@
   <div id="loading-screen" class="loading-screen">
     <div class="loader-spinner"></div>
     <h2>Memuat Keajaiban AR...</h2>
-    <p>Mohon tunggu sebentar, kami sedang menyiapkan model 3D dan memuat kamera Anda.</p>
+    
+    <div class="progress-container">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+    <div id="loading-status" class="loading-status">Menyiapkan Kamera...</div>
+    
+    <p>Mohon tunggu sebentar, kami sedang menyiapkan modul edukasi untuk Anda.</p>
     <div class="permission-note">📷 Jika muncul notifikasi, izinkan akses kamera.</div>
   </div>
 
@@ -166,9 +172,33 @@
         infoPanel.classList.remove('visible');
       });
 
-      // AR Engine Ready (Hide Loading Screen)
+      // Loading Progress Logic
+      const progressBar = document.getElementById('progress-bar');
+      const loadingStatus = document.getElementById('loading-status');
+      let progress = 0;
+      let msgIndex = 0;
+      const messages = ["Menyiapkan Kamera...", "Mengunduh Aset 3D...", "Membangun Ruang AR...", "Hampir Siap..."];
+      
+      const interval = setInterval(() => {
+        if (progress < 90) {
+          progress += Math.random() * 15;
+          if(progress > 90) progress = 90;
+          if(progressBar) progressBar.style.width = `${progress}%`;
+          
+          if(progress > 25 && msgIndex === 0) { msgIndex++; loadingStatus.textContent = messages[msgIndex]; }
+          if(progress > 50 && msgIndex === 1) { msgIndex++; loadingStatus.textContent = messages[msgIndex]; }
+          if(progress > 75 && msgIndex === 2) { msgIndex++; loadingStatus.textContent = messages[msgIndex]; }
+        }
+      }, 800);
+
+      // Hide Loading Screen when AR is ready
       document.querySelector('a-scene').addEventListener('arReady', () => {
-        document.getElementById('loading-screen').classList.add('hidden');
+        clearInterval(interval);
+        if(progressBar) progressBar.style.width = '100%';
+        if(loadingStatus) loadingStatus.textContent = "Selesai!";
+        setTimeout(() => {
+          document.getElementById('loading-screen').classList.add('hidden');
+        }, 500);
       });
 
       // UI Interactions

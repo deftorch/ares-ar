@@ -109,6 +109,12 @@
   <div id="loading-screen" class="loading-screen">
     <div class="loader-spinner"></div>
     <h2>Memuat Kuis Interaktif...</h2>
+    
+    <div class="progress-container">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+    <div id="loading-status" class="loading-status">Menyiapkan Kamera...</div>
+    
     <p>Tunggu sebentar, kami sedang menyiapkan pertanyaan dan menyalakan kamera.</p>
     <div class="permission-note">📷 Jika muncul notifikasi, izinkan akses kamera.</div>
   </div>
@@ -208,8 +214,32 @@
       let currentIndex = 0;
       let score = 0;
 
+      // Loading Progress Logic
+      const progressBar = document.getElementById('progress-bar');
+      const loadingStatus = document.getElementById('loading-status');
+      let progress = 0;
+      let msgIndex = 0;
+      const messages = ["Menyiapkan Kamera...", "Mengunduh Pertanyaan...", "Membangun Kuis...", "Hampir Siap..."];
+      
+      const interval = setInterval(() => {
+        if (progress < 90) {
+          progress += Math.random() * 15;
+          if(progress > 90) progress = 90;
+          if(progressBar) progressBar.style.width = `${progress}%`;
+          
+          if(progress > 25 && msgIndex === 0) { msgIndex++; loadingStatus.textContent = messages[msgIndex]; }
+          if(progress > 50 && msgIndex === 1) { msgIndex++; loadingStatus.textContent = messages[msgIndex]; }
+          if(progress > 75 && msgIndex === 2) { msgIndex++; loadingStatus.textContent = messages[msgIndex]; }
+        }
+      }, 800);
+
       document.querySelector('a-scene').addEventListener('arReady', () => {
-        document.getElementById('loading-screen').classList.add('hidden');
+        clearInterval(interval);
+        if(progressBar) progressBar.style.width = '100%';
+        if(loadingStatus) loadingStatus.textContent = "Selesai!";
+        setTimeout(() => {
+          document.getElementById('loading-screen').classList.add('hidden');
+        }, 500);
       });
 
       target.addEventListener("targetFound", () => {
