@@ -85,7 +85,10 @@
       }
     });
 
-    // Database Gabungan (Hal 2 & 3)
+    // Database Gabungan (Hal 1, 2 & 3)
+    const hal1Data = {
+      'fakta': { title: 'Fakta Stunting', desc: '<p style="margin-top:0;">Stunting bukan sekadar anak pendek, melainkan kondisi gagal tumbuh akibat kurang gizi kronis di 1.000 HPK.</p><b>Dampak Jangka Panjang:</b><ul style="margin-top:0.5rem; padding-left:1.5rem"><li>Kecerdasan otak tidak optimal</li><li>Rentan terhadap penyakit</li><li>Produktivitas menurun saat dewasa</li></ul>' }
+    };
     const hal2Data = {
       'telur': { title: 'Telur Ayam', desc: 'Sumber protein tinggi yang mudah diserap tubuh. Sangat baik untuk perkembangan otak anak.' },
       'lele': { title: 'Ikan Lele', desc: 'Kaya asam lemak Omega-3 dan zat besi. Harganya terjangkau tapi gizinya juara.' },
@@ -199,6 +202,8 @@
       <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
       <a-gltf-model src="#anak_sehat" position="-0.7 -1.05 -0.05" scale="0.66 0.66 0.66"></a-gltf-model>
       <a-gltf-model src="#anak_stunting" position="0.8 -0.95 0" scale="0.8 0.8 0.8"></a-gltf-model>
+      <a-text value="Tumbuh Optimal" position="-0.7 -1.3 0" align="center" color="#16a34a" scale="0.4 0.4 0.4" font="https://cdn.aframe.io/fonts/Roboto-msdf.json"></a-text>
+      <a-text value="Stunting" position="0.8 -1.3 0" align="center" color="#dc2626" scale="0.4 0.4 0.4" font="https://cdn.aframe.io/fonts/Roboto-msdf.json"></a-text>
     </a-entity>
 
     <!-- Target 1: Hal 2 -->
@@ -284,7 +289,12 @@
             btnRescan.style.display = 'block';
           }
           
-          if (page === "2") {
+          if (page === "1") {
+            foodBtnsContainer.innerHTML = `
+              <button class="food-btn active-btn" style="padding: 12px 24px; font-size: 1.1rem; border-radius: 30px; background: #FACC15; color: #854D0E; border: 4px solid white; box-shadow: 0 6px 0 #CA8A04;" data-type="hal1" data-id="fakta">Bandingkan Kondisi</button>
+            `;
+            foodBtnsContainer.style.display = 'flex';
+          } else if (page === "2") {
             foodBtnsContainer.innerHTML = `
               <button class="food-btn active-btn" data-type="hal2" data-id="telur">Telur Ayam</button>
               <button class="food-btn active-btn" data-type="hal2" data-id="lele">Ikan Lele</button>
@@ -320,10 +330,14 @@
           document.querySelectorAll('.food-btn').forEach(btn => {
             btn.addEventListener('click', () => {
               const type = btn.dataset.type;
-              const data = type === 'hal2' ? hal2Data[btn.dataset.id] : hal3Data[btn.dataset.id];
+              let data = null;
+              if (type === 'hal1') data = hal1Data[btn.dataset.id];
+              else if (type === 'hal2') data = hal2Data[btn.dataset.id];
+              else if (type === 'hal3') data = hal3Data[btn.dataset.id];
+
               if(data) {
                 document.getElementById('panel-title').textContent = data.title;
-                document.getElementById('panel-content-text').textContent = data.desc;
+                document.getElementById('panel-content-text').innerHTML = data.desc;
                 const pPorsi = document.getElementById('panel-porsi');
                 if(data.porsi) { pPorsi.textContent = "Porsi: " + data.porsi; pPorsi.style.display = 'block'; } else { pPorsi.style.display = 'none'; }
                 infoPanel.classList.add('visible');
