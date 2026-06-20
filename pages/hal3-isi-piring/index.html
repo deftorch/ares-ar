@@ -31,57 +31,60 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+    .food-buttons {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 10px;
+      z-index: 1000;
+      pointer-events: auto;
+    }
+    .food-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #3b82f6;
+      color: #1e3a8a;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .food-btn:active {
+      transform: scale(0.95);
+      background: #3b82f6;
+      color: white;
+    }
   </style>
 
   <script>
-    AFRAME.registerComponent('plate-manager', {
-      init: function () {
-        this.foodItems = this.el.querySelectorAll('.food-item');
-        let visibleCount = 0;
-        
-        // Staggered animation for food items appearing
-        this.el.sceneEl.addEventListener('targetFound', () => {
-          this.foodItems.forEach((item, index) => {
-            setTimeout(() => {
-              item.setAttribute('visible', 'true');
-              item.emit('appear');
-              visibleCount++;
-              
-              if (visibleCount === this.foodItems.length) {
-                setTimeout(() => {
-                  document.getElementById('highlight-msg').classList.add('visible');
-                }, 1000);
-              }
-            }, (index + 1) * 800);
-          });
-        });
+    window.isTrackingActive = false;
 
-        this.el.sceneEl.addEventListener('targetLost', () => {
-          this.foodItems.forEach(item => item.setAttribute('visible', 'false'));
-          visibleCount = 0;
-          document.getElementById('highlight-msg').classList.remove('visible');
-        });
+    // Sticky AR Component
+    AFRAME.registerComponent('sticky-ar', {
+      tick: function () {
+        const target = document.querySelector('#target');
+        const models = document.querySelector('#models-container');
+        if (window.isTrackingActive && target && models && target.object3D.visible) {
+          models.setAttribute('visible', true);
+          models.object3D.matrixAutoUpdate = false;
+          models.object3D.matrix.copy(target.object3D.matrix);
+        }
       }
     });
 
-    AFRAME.registerComponent('food-info', {
-      schema: { group: {type: 'string'} },
-      init: function () {
-        const info = {
-          'karbo': { title: 'Karbohidrat', desc: 'Sumber energi utama untuk aktivitas anak sehari-hari.' },
-          'protein': { title: 'Protein Hewani', desc: 'Membantu pertumbuhan sel dan tinggi badan.' },
-          'sayur': { title: 'Sayuran', desc: 'Sumber vitamin, mineral, dan serat.' },
-          'buah': { title: 'Buah-buahan', desc: 'Kaya akan Vitamin C dan antioksidan alami.' }
-        };
-
-        this.el.addEventListener('click', () => {
-          const data = info[this.data.group];
-          document.getElementById('panel-title').textContent = data.title;
-          document.getElementById('panel-content-text').textContent = data.desc;
-          document.getElementById('info-panel').classList.add('visible');
-        });
-      }
-    });
+    const foodInfoData = {
+      'karbo': { title: 'Karbohidrat', desc: 'Sumber energi utama untuk aktivitas anak sehari-hari.' },
+      'protein': { title: 'Protein Hewani', desc: 'Membantu pertumbuhan sel dan tinggi badan.' },
+      'sayur': { title: 'Sayuran', desc: 'Sumber vitamin, mineral, dan serat.' },
+      'buah': { title: 'Buah-buahan', desc: 'Kaya akan Vitamin C dan antioksidan alami.' }
+    };
   </script>
 </head>
 <body>
@@ -95,11 +98,18 @@
   </div>
 
   <div class="ar-ui-layer">
-    <div class="top-nav">
+    <div class="top-nav" style="display: flex; justify-content: space-between; width: 100%;">
       <a href="../../index.html" class="back-btn interactive"><span>←</span> Kembali</a>
+      <button id="btn-rescan" class="back-btn interactive" style="display: none; background: #ef4444; color: white; border: none; font-weight: bold; cursor: pointer;">✕ Tutup Model</button>
     </div>
     <div id="scanning-guide" class="scanning-overlay">
       <div class="scanning-text">Arahkan ke halaman 3 (Isi Piring)</div>
+    </div>
+    <div id="food-buttons-container" class="food-buttons" style="display: none;">
+      <button class="food-btn" data-food="karbo">Karbohidrat</button>
+      <button class="food-btn" data-food="protein">Protein Hewani</button>
+      <button class="food-btn" data-food="sayur">Sayuran</button>
+      <button class="food-btn" data-food="buah">Buah-buahan</button>
     </div>
   </div>
 
@@ -118,7 +128,7 @@
     </div>
   </div>
 
-  <a-scene 
+  <a-scene sticky-ar
     mindar-image="imageTargetSrc: ./hal3.mind; autoStart: true; uiScanning: #scanning-guide" 
     color-space="sRGB" 
     renderer="colorManagement: true; physicallyCorrectLights: true" 
@@ -128,45 +138,39 @@
     
     <a-assets>
       <a-asset-item id="piring" src="../../models/piring_makanan.glb"></a-asset-item>
-      <!-- We will just use placeholders by changing scale of generic geometry if glb fails, but code maps to glb -->
     </a-assets>
 
-    <a-camera position="0 0 0" look-controls="enabled: false">
-      <a-entity cursor="fuse: false; rayOrigin: mouse;" raycaster="objects: .clickable"></a-entity>
-    </a-camera>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <a-entity id="target" mindar-image-target="targetIndex: 0" plate-manager>
-      
+    <a-entity id="target" mindar-image-target="targetIndex: 0"></a-entity>
+    
+    <a-entity id="models-container" visible="false">
       <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
       <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
       
       <!-- Piring (Base) -->
-      <a-gltf-model src="#piring" position="0 0.1 0" scale="0.08 0.08 0.08" rotation="0 5 0"></a-gltf-model>
+      <a-gltf-model src="#piring" position="0 0 0" scale="0.05 0.05 0.05" rotation="90 0 0"></a-gltf-model>
 
-      <!-- Food groups (will appear sequentially) -->
-      <!-- Top Left: Karbo -->
-      <a-entity class="food-item clickable" food-info="group: karbo" visible="false" position="-0.15 0.15 0.05"
+      <!-- Food groups -->
+      <a-entity class="food-item" visible="false" position="-0.15 0.15 0.05"
         animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
         <a-sphere color="#fef08a" radius="0.1" opacity="0.9"></a-sphere>
         <a-text value="Karbohidrat" position="0 0.15 0" align="center" color="#ca8a04" scale="0.2 0.2 0.2"></a-text>
       </a-entity>
 
-      <!-- Top Right: Protein -->
-      <a-entity class="food-item clickable" food-info="group: protein" visible="false" position="0.15 0.15 0.05"
+      <a-entity class="food-item" visible="false" position="0.15 0.15 0.05"
         animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
         <a-sphere color="#fca5a5" radius="0.1" opacity="0.9"></a-sphere>
         <a-text value="Protein" position="0 0.15 0" align="center" color="#dc2626" scale="0.2 0.2 0.2"></a-text>
       </a-entity>
 
-      <!-- Bottom Left: Sayur -->
-      <a-entity class="food-item clickable" food-info="group: sayur" visible="false" position="-0.15 -0.15 0.05"
+      <a-entity class="food-item" visible="false" position="-0.15 -0.15 0.05"
         animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
         <a-sphere color="#86efac" radius="0.1" opacity="0.9"></a-sphere>
         <a-text value="Sayuran" position="0 -0.15 0" align="center" color="#16a34a" scale="0.2 0.2 0.2"></a-text>
       </a-entity>
 
-      <!-- Bottom Right: Buah -->
-      <a-entity class="food-item clickable" food-info="group: buah" visible="false" position="0.15 -0.15 0.05"
+      <a-entity class="food-item" visible="false" position="0.15 -0.15 0.05"
         animation__appear="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; easing: easeOutElastic; startEvents: appear">
         <a-sphere color="#fcd34d" radius="0.1" opacity="0.9"></a-sphere>
         <a-text value="Buah" position="0 -0.15 0" align="center" color="#d97706" scale="0.2 0.2 0.2"></a-text>
@@ -177,16 +181,79 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      const closePanel = document.querySelector('#close-panel');
+      const target = document.querySelector('#target');
+      const scanningGuide = document.querySelector('#scanning-guide');
       const infoPanel = document.querySelector('#info-panel');
+      const closePanel = document.querySelector('#close-panel');
+      const btnRescan = document.querySelector('#btn-rescan');
+      const modelsContainer = document.querySelector('#models-container');
+      const foodBtnsContainer = document.querySelector('#food-buttons-container');
+      const foodBtns = document.querySelectorAll('.food-btn');
+      const foodItems = document.querySelectorAll('.food-item');
+      let visibleCount = 0;
 
       // Hide Loading Screen when AR is ready
       document.querySelector('a-scene').addEventListener('arReady', () => {
         document.getElementById('loading-screen').classList.add('hidden');
       });
 
+      target.addEventListener("targetFound", () => {
+        window.isTrackingActive = true;
+        scanningGuide.style.display = 'none';
+        btnRescan.style.display = 'block';
+        
+        // Staggered animation
+        foodItems.forEach((item, index) => {
+          setTimeout(() => {
+            if(!window.isTrackingActive) return; // skip if closed early
+            item.setAttribute('visible', 'true');
+            item.emit('appear');
+            visibleCount++;
+            
+            if (visibleCount === foodItems.length) {
+              setTimeout(() => {
+                if(window.isTrackingActive) {
+                  document.getElementById('highlight-msg').classList.add('visible');
+                  foodBtnsContainer.style.display = 'flex';
+                }
+              }, 1000);
+            }
+          }, (index + 1) * 800);
+        });
+      });
+
+      target.addEventListener("targetLost", () => {
+        // Sticky AR: do nothing
+      });
+
+      btnRescan.addEventListener('click', () => {
+        window.isTrackingActive = false;
+        modelsContainer.setAttribute('visible', false);
+        btnRescan.style.display = 'none';
+        foodBtnsContainer.style.display = 'none';
+        document.getElementById('highlight-msg').classList.remove('visible');
+        scanningGuide.style.display = 'flex';
+        infoPanel.classList.remove('visible');
+        
+        // Reset plate items
+        foodItems.forEach(item => item.setAttribute('visible', 'false'));
+        visibleCount = 0;
+      });
+
       closePanel.addEventListener('click', () => {
         infoPanel.classList.remove('visible');
+      });
+
+      // Buttons click logic
+      foodBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const data = foodInfoData[btn.dataset.food];
+          if(data) {
+            document.getElementById('panel-title').textContent = data.title;
+            document.getElementById('panel-content-text').textContent = data.desc;
+            infoPanel.classList.add('visible');
+          }
+        });
       });
     });
   </script>
