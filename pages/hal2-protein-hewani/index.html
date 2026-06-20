@@ -28,16 +28,17 @@
   </style>
 
   <script>
+    window.isTrackingActive = false;
+
     // Sticky AR Component
     AFRAME.registerComponent('sticky-ar', {
       tick: function () {
         const target = document.querySelector('#target');
         const models = document.querySelector('#models-container');
-        if (target && models && target.object3D.visible) {
+        if (window.isTrackingActive && target && models && target.object3D.visible) {
           models.setAttribute('visible', true);
-          models.object3D.position.copy(target.object3D.position);
-          models.object3D.quaternion.copy(target.object3D.quaternion);
-          models.object3D.scale.copy(target.object3D.scale);
+          models.object3D.matrixAutoUpdate = false;
+          models.object3D.matrix.copy(target.object3D.matrix);
         }
       }
     });
@@ -201,6 +202,7 @@
       });
 
       target.addEventListener("targetFound", () => {
+        window.isTrackingActive = true;
         scanningGuide.style.display = 'none';
         btnRescan.style.display = 'block';
       });
@@ -212,6 +214,7 @@
 
       // User clicks X button to rescan
       btnRescan.addEventListener('click', () => {
+        window.isTrackingActive = false;
         modelsContainer.setAttribute('visible', false);
         btnRescan.style.display = 'none';
         scanningGuide.style.display = 'flex';
