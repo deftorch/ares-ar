@@ -23,10 +23,27 @@
       display: block;
       animation: fadeIn 0.4s ease-out;
     }
-    .cl-header { text-align: center; margin-bottom: 1.5rem; }
+    /* Responsiveness & Scrollable */
+    .checklist-container {
+      max-height: 75vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+    }
+    .cl-header { flex-shrink: 0; text-align: center; margin-bottom: 1rem; }
+    .cl-items-list {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    /* Scrollbar */
+    .cl-items-list::-webkit-scrollbar { width: 6px; }
+    .cl-items-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .cl-items-list::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    
     .cl-title { font-size: 1.5rem; font-weight: 900; color: var(--primary-dark); margin: 0 0 0.5rem 0; }
     .cl-progress { font-size: 1rem; color: var(--secondary-dark); font-weight: 900; }
-    .success-msg { text-align: center; color: var(--green-dark); font-weight: 900; font-size: 1.2rem; margin-top: 1rem; display: none; }
+    .success-msg { flex-shrink: 0; text-align: center; color: var(--green-dark); font-weight: 900; font-size: 1.2rem; margin-top: 1rem; display: none; }
     
     @keyframes fadeIn {
       from { opacity: 0; transform: translate(-50%, -45%); }
@@ -45,8 +62,9 @@
   </div>
 
   <div class="ar-ui-layer">
-    <div class="top-nav">
+    <div class="top-nav" style="display: flex; justify-content: space-between; width: 100%;">
       <a href="../../index.html" class="back-btn interactive"><span>←</span> Kembali</a>
+      <button id="btn-rescan" class="back-btn interactive" style="display: none; background: #ef4444; color: white; border: none; font-weight: bold; cursor: pointer;">✕ Tutup Checklist</button>
     </div>
     <div id="scanning-guide" class="scanning-overlay">
       <div class="scanning-text">Arahkan ke halaman 4 (5 Langkah)</div>
@@ -125,6 +143,7 @@
       const items = document.querySelectorAll('.cl-item');
       const progressText = document.querySelector('#progress-text');
       const successMsg = document.querySelector('#success-msg');
+      const btnRescan = document.querySelector('#btn-rescan');
       
       let checkedCount = 0;
 
@@ -136,11 +155,23 @@
       target.addEventListener("targetFound", () => {
         scanningGuide.style.display = 'none';
         checklistWrapper.classList.add('visible');
+        btnRescan.style.display = 'block';
       });
 
       target.addEventListener("targetLost", () => {
-        scanningGuide.style.display = 'flex';
+        // Sticky UI: do not hide the checklist!
+      });
+
+      btnRescan.addEventListener('click', () => {
         checklistWrapper.classList.remove('visible');
+        btnRescan.style.display = 'none';
+        scanningGuide.style.display = 'flex';
+        
+        // Reset checklist
+        items.forEach(item => item.classList.remove('checked'));
+        checkedCount = 0;
+        progressText.textContent = `0/5 Langkah Selesai`;
+        successMsg.style.display = 'none';
       });
 
       items.forEach(item => {
@@ -148,11 +179,17 @@
           if (!item.classList.contains('checked')) {
             item.classList.add('checked');
             checkedCount++;
-            progressText.textContent = `${checkedCount}/5 Langkah Selesai`;
-            
-            if (checkedCount === 5) {
-              successMsg.style.display = 'block';
-            }
+          } else {
+            item.classList.remove('checked');
+            checkedCount--;
+          }
+          
+          progressText.textContent = `${checkedCount}/5 Langkah Selesai`;
+          
+          if (checkedCount === 5) {
+            successMsg.style.display = 'block';
+          } else {
+            successMsg.style.display = 'none';
           }
         });
       });
