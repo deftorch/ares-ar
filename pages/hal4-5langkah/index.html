@@ -25,6 +25,7 @@
     }
     /* Responsiveness & Scrollable */
     .checklist-container {
+      position: relative;
       max-height: 75vh;
       display: flex;
       flex-direction: column;
@@ -62,9 +63,8 @@
   </div>
 
   <div class="ar-ui-layer">
-    <div class="top-nav" style="display: flex; justify-content: space-between; width: 100%;">
+    <div class="top-nav">
       <a href="../../index.html" class="back-btn interactive"><span>←</span> Kembali</a>
-      <button id="btn-rescan" class="back-btn interactive" style="display: none; background: #ef4444; color: white; border: none; font-weight: bold; cursor: pointer;">✕ Tutup Checklist</button>
     </div>
     <div id="scanning-guide" class="scanning-overlay">
       <div class="scanning-text">Arahkan ke halaman 4 (5 Langkah)</div>
@@ -74,6 +74,7 @@
   <!-- HTML Overlay Checklist -->
   <div id="checklist-wrapper" class="checklist-wrapper interactive">
     <div class="checklist-container">
+      <button id="btn-rescan" class="close-btn interactive" style="position: absolute; top: -15px; right: -15px; z-index: 10;">✕</button>
       <div class="cl-header">
         <h3 class="cl-title">5 Langkah Cegah</h3>
         <div id="progress-text" class="cl-progress">0/5 Langkah Selesai</div>
@@ -155,7 +156,6 @@
       target.addEventListener("targetFound", () => {
         scanningGuide.style.display = 'none';
         checklistWrapper.classList.add('visible');
-        btnRescan.style.display = 'block';
       });
 
       target.addEventListener("targetLost", () => {
@@ -164,7 +164,6 @@
 
       btnRescan.addEventListener('click', () => {
         checklistWrapper.classList.remove('visible');
-        btnRescan.style.display = 'none';
         scanningGuide.style.display = 'flex';
         
         // Reset checklist
