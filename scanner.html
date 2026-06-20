@@ -87,20 +87,20 @@
 
     // Database Gabungan (Hal 1, 2 & 3)
     const hal1Data = {
-      'fakta': { title: 'Fakta Stunting', desc: '<p style="margin-top:0;">Stunting bukan sekadar anak pendek, melainkan kondisi gagal tumbuh akibat kurang gizi kronis di 1.000 HPK.</p><b>Dampak Jangka Panjang:</b><ul style="margin-top:0.5rem; padding-left:1.5rem"><li>Kecerdasan otak tidak optimal</li><li>Rentan terhadap penyakit</li><li>Produktivitas menurun saat dewasa</li></ul>' }
+      'fakta': { title: 'Fakta Stunting', desc: '<p style="margin-top:0;">Stunting bukan sekadar anak pendek, melainkan kondisi gagal tumbuh pada anak akibat kurang gizi kronis di 1.000 Hari Pertama Kehidupan (HPK).</p><b>Dampak Jangka Panjang:</b><ul style="margin-top:0.5rem; padding-left:1.5rem"><li>Kecerdasan otak anak tidak optimal</li><li>Anak lebih rentan terhadap penyakit</li><li>Produktivitas menurun saat dewasa nanti</li></ul>' }
     };
     const hal2Data = {
-      'telur': { title: 'Telur Ayam', desc: 'Sumber protein tinggi yang mudah diserap tubuh. Sangat baik untuk perkembangan otak anak.' },
-      'lele': { title: 'Ikan Lele', desc: 'Kaya asam lemak Omega-3 dan zat besi. Harganya terjangkau tapi gizinya juara.' },
-      'ikan': { title: 'Ikan Laut', desc: 'Sumber protein hewani berkualitas tinggi dan yodium untuk mencegah stunting.' },
+      'telur': { title: 'Telur Ayam', desc: 'Sumber protein tinggi yang mudah diserap. Sangat baik untuk perkembangan otak si Kecil.' },
+      'lele': { title: 'Ikan Lele', desc: 'Kaya asam lemak Omega-3 dan zat besi. Harganya terjangkau, tapi gizinya juara untuk anak!' },
+      'ikan': { title: 'Ikan Laut', desc: 'Sumber protein hewani berkualitas tinggi dan kaya yodium untuk mencegah stunting.' },
       'hati': { title: 'Hati Ayam', desc: 'Gudangnya zat besi! Sangat ampuh mencegah anemia pada ibu hamil dan balita.' },
-      'daging': { title: 'Daging Sapi', desc: 'Kaya akan protein dan zinc (seng) yang mempercepat pertumbuhan tinggi badan anak.' }
+      'daging': { title: 'Daging Sapi', desc: 'Kaya akan protein dan zinc (seng) yang mempercepat pertumbuhan tinggi badan si Kecil.' }
     };
     const hal3Data = {
-      'karbo': { title: 'Makanan Pokok', desc: 'Sumber Karbohidrat. Berfungsi sebagai sumber energi utama.', porsi: '2/3 Dari Setengah Piring' },
-      'protein': { title: 'Lauk Pauk', desc: 'Sumber Protein. Sangat penting untuk mencegah stunting.', porsi: '1/3 Dari Setengah Piring' },
-      'sayur': { title: 'Sayuran', desc: 'Sumber Serat. Menjaga pencernaan tetap sehat.', porsi: '2/3 Dari Setengah Piring' },
-      'buah': { title: 'Buah-buahan', desc: 'Kaya vitamin alami untuk menjaga sistem kekebalan tubuh.', porsi: '1/3 Dari Setengah Piring' }
+      'karbo': { title: 'Makanan Pokok', desc: 'Sumber Karbohidrat. Berfungsi sebagai sumber energi utama agar anak tetap aktif.', porsi: '2/3 Dari Setengah Piring' },
+      'protein': { title: 'Lauk Pauk', desc: 'Sumber Protein Hewani. Kunci utama untuk mencegah stunting pada anak.', porsi: '1/3 Dari Setengah Piring' },
+      'sayur': { title: 'Sayuran', desc: 'Sumber Serat. Menjaga pencernaan tetap sehat dan lancar.', porsi: '2/3 Dari Setengah Piring' },
+      'buah': { title: 'Buah-buahan', desc: 'Kaya vitamin alami untuk menjaga daya tahan tubuh anak dari penyakit.', porsi: '1/3 Dari Setengah Piring' }
     };
   </script>
 </head>
@@ -148,13 +148,13 @@
       <button class="close-btn interactive btn-close-overlay" style="position: absolute; top: -15px; right: -15px; z-index: 10;">✕</button>
       <div class="cl-header"><h3 class="cl-title">5 Langkah Cegah</h3><div id="progress-text" class="cl-progress">0/5 Langkah Selesai</div></div>
       <div class="cl-items-list">
-        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>1. Minum Tablet Tambah Darah</h4><p>Rutin minum TTD setiap hari untuk cegah anemia.</p></div></div>
-        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>2. Konsumsi Protein Hewani</h4><p>Makan telur, ikan, ayam setiap hari.</p></div></div>
-        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>3. ASI Eksklusif 6 Bulan</h4><p>Hanya berikan ASI di 6 bulan pertama.</p></div></div>
-        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>4. MPASI Bergizi</h4><p>Mulai usia 6 bulan, berikan MPASI seimbang.</p></div></div>
-        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>5. Rutin ke Posyandu</h4><p>Timbang berat badan & ukur tinggi badan.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>1. Minum Tablet Tambah Darah</h4><p>Rutin minum TTD setiap hari untuk cegah anemia (kekurangan darah).</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>2. Konsumsi Protein Hewani</h4><p>Pastikan ada telur, ikan, atau daging di setiap piring makan.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>3. ASI Eksklusif 6 Bulan</h4><p>Hanya berikan ASI tanpa tambahan apapun di 6 bulan pertama bayi.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>4. MPASI Bergizi</h4><p>Mulai usia 6 bulan, berikan makanan pendamping (MPASI) bergizi seimbang.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>5. Rutin ke Posyandu</h4><p>Pantau selalu berat dan tinggi badan anak setiap bulannya.</p></div></div>
       </div>
-      <div id="success-msg" class="success-msg">🎉 Luar biasa! Semua langkah tuntas!</div>
+      <div id="success-msg" class="success-msg">🎉 Hebat! Ayah Bunda paham semua langkah!</div>
     </div>
   </div>
 
@@ -163,7 +163,7 @@
     <div class="quiz-container">
       <button class="close-btn interactive btn-close-overlay" style="position: absolute; top: -15px; right: -15px; z-index: 10;">✕</button>
       <div class="quiz-scroll-area">
-        <div id="start-screen" style="text-align: center;"><h2 style="font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin-top:0;">Kuis Stunting</h2><p style="color: #64748B; font-weight: 700; margin-bottom: 2rem;">10 pertanyaan acak siap menanti!</p><button id="btn-start" class="btn-primary">Mulai Kuis</button></div>
+        <div id="start-screen" style="text-align: center;"><h2 style="font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin-top:0;">Kuis Stunting</h2><p style="color: #64748B; font-weight: 700; margin-bottom: 2rem;">Yuk, uji pengetahuan Ayah/Bunda dengan 10 pertanyaan singkat!</p><button id="btn-start" class="btn-primary">Mulai Kuis</button></div>
         <div id="question-screen" style="display: none;">
           <div class="q-header"><span>Pertanyaan</span><span class="q-number" id="q-counter">1/10</span></div>
           <div class="quiz-question" id="q-text">Loading...</div>
@@ -394,8 +394,8 @@
       document.getElementById('btn-next').addEventListener('click', ()=>{ qIdx++; if(qIdx<curQ.length) showQ(); else {
         document.getElementById('question-screen').style.display='none'; document.getElementById('result-container').style.display='block';
         document.getElementById('r-score').textContent=qScore*10;
-        document.getElementById('r-title').textContent = qScore>=9?'Jagoan!':qScore>=7?'Bagus!':'Belajar Lagi!';
-        document.getElementById('r-desc').textContent = "Hasil kuis kamu.";
+        document.getElementById('r-title').textContent = qScore>=9?'Luar Biasa! 🏆':qScore>=7?'Hebat! ⭐':'Tetap Semangat! 💪';
+        document.getElementById('r-desc').textContent = qScore>=7?'Ayah Bunda sudah sangat paham cara mencegah stunting.':'Mari baca kembali buku saku untuk info lebih detail ya.';
       }});
     });
   </script>
