@@ -37,10 +37,11 @@
 
   <!-- UI Layer (Overlays the 3D scene) -->
   <div class="ar-ui-layer">
-    <div class="top-nav">
+    <div class="top-nav" style="display: flex; justify-content: space-between; width: 100%;">
       <a href="../../index.html" class="back-btn interactive">
         <span>←</span> Kembali
       </a>
+      <button id="btn-rescan" class="back-btn interactive" style="display: none; background: #ef4444; color: white; border: none; font-weight: bold; cursor: pointer;">✕ Tutup Model</button>
     </div>
     
     <div id="scanning-guide" class="scanning-overlay">
@@ -71,7 +72,7 @@
   </div>
 
   <!-- AR Scene -->
-  <a-scene 
+  <a-scene sticky-ar
     mindar-image="imageTargetSrc: ./hal1.mind; autoStart: true; uiScanning: #scanning-guide" 
     color-space="sRGB" 
     renderer="colorManagement: true; physicallyCorrectLights: true" 
@@ -88,8 +89,9 @@
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <!-- Target 0 is the first image in the .mind file -->
-    <a-entity id="target" mindar-image-target="targetIndex: 0">
+    <a-entity id="target" mindar-image-target="targetIndex: 0"></a-entity>
       
+    <a-entity id="models-container" visible="false">
       <!-- Lighting -->
       <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
       <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
@@ -116,6 +118,21 @@
   </a-scene>
 
   <script>
+    window.isTrackingActive = false;
+
+    // Sticky AR Component
+    AFRAME.registerComponent('sticky-ar', {
+      tick: function () {
+        const target = document.querySelector('#target');
+        const models = document.querySelector('#models-container');
+        if (window.isTrackingActive && target && models && target.object3D.visible) {
+          models.setAttribute('visible', true);
+          models.object3D.matrixAutoUpdate = false;
+          models.object3D.matrix.copy(target.object3D.matrix);
+        }
+      }
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
       const target = document.querySelector('#target');
       const scanningGuide = document.querySelector('#scanning-guide');
@@ -123,17 +140,29 @@
       const compareBtn = document.querySelector('#compare-btn');
       const infoPanel = document.querySelector('#info-panel');
       const closePanel = document.querySelector('#close-panel');
+      const btnRescan = document.querySelector('#btn-rescan');
+      const modelsContainer = document.querySelector('#models-container');
 
       // When target is found
       target.addEventListener("targetFound", () => {
+        window.isTrackingActive = true;
         scanningGuide.style.display = 'none';
         compareBtnContainer.style.display = 'block';
+        btnRescan.style.display = 'block';
       });
 
-      // When target is lost
+      // When target is lost (Sticky AR keeps model frozen on screen)
       target.addEventListener("targetLost", () => {
-        scanningGuide.style.display = 'flex';
+        // do nothing
+      });
+
+      // User clicks X button to rescan
+      btnRescan.addEventListener('click', () => {
+        window.isTrackingActive = false;
+        modelsContainer.setAttribute('visible', false);
+        btnRescan.style.display = 'none';
         compareBtnContainer.style.display = 'none';
+        scanningGuide.style.display = 'flex';
         infoPanel.classList.remove('visible');
       });
 
