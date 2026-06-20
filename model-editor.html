@@ -177,7 +177,9 @@
               ${createControlGroup(m.id, 'Posisi X (Kiri/Kanan)', 'posX', -2, 2, 0.05, m.posX)}
               ${createControlGroup(m.id, 'Posisi Y (Tinggi)', 'posY', -2, 2, 0.05, m.posY)}
               ${createControlGroup(m.id, 'Posisi Z (Maju/Mundur)', 'posZ', -2, 2, 0.05, m.posZ)}
+              ${createControlGroup(m.id, 'Rotasi X (Tunduk/Tengadah)', 'rotX', -180, 180, 5, m.rotX)}
               ${createControlGroup(m.id, 'Rotasi Y (Kiri/Kanan)', 'rotY', -180, 180, 5, m.rotY)}
+              ${createControlGroup(m.id, 'Rotasi Z (Miring)', 'rotZ', -180, 180, 5, m.rotZ)}
             </div>
           `;
 
@@ -194,7 +196,7 @@
 
           card.querySelector('.btn-delete').addEventListener('click', () => removeModel(m.id));
 
-          ['scale', 'posX', 'posY', 'posZ', 'rotY'].forEach(key => {
+          ['scale', 'posX', 'posY', 'posZ', 'rotX', 'rotY', 'rotZ'].forEach(key => {
             const slider = card.querySelector(`#slider-${key}-${m.id}`);
             const num = card.querySelector(`#num-${key}-${m.id}`);
             
