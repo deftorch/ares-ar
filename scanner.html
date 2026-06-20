@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Universal Scanner - ARES</title>
+  
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <link rel="stylesheet" href="./shared/ar-styles.css">
+  
+  <style>
+    /* CSS Gabungan dari Hal 2, 3, 4, 5 */
+    .food-buttons {
+      position: absolute; bottom: 20px; left: 0; width: 100%;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+      padding: 0 10px; z-index: 1000; pointer-events: auto;
+    }
+    .food-btn {
+      background: rgba(255, 255, 255, 0.9); border: 2px solid #3b82f6;
+      color: #1e3a8a; padding: 8px 16px; border-radius: 20px;
+      font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      cursor: pointer; transition: all 0.2s; display: none;
+    }
+    .food-btn.active-btn { display: block; }
+    .food-btn:active { transform: scale(0.95); background: #3b82f6; color: white; }
+
+    .highlight-msg {
+      position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%);
+      background: rgba(245, 158, 11, 0.9); color: white; padding: 1rem;
+      border-radius: 16px; font-weight: 700; text-align: center;
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); opacity: 0;
+      transition: opacity 0.5s ease, transform 0.5s ease; pointer-events: none;
+      width: 80%; max-width: 350px; display: none;
+    }
+    .highlight-msg.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Checklist & Quiz Overlays */
+    .checklist-wrapper, .quiz-wrapper {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 100%; display: none; z-index: 200;
+    }
+    .visible-wrapper { display: block; animation: fadeIn 0.4s ease-out; }
+    
+    .checklist-container, .quiz-container { position: relative; }
+    .cl-header { flex-shrink: 0; text-align: center; margin-bottom: 1rem; }
+    .cl-items-list, .quiz-scroll-area { max-height: 75vh; overflow-y: auto; padding-right: 5px; }
+    .cl-items-list::-webkit-scrollbar, .quiz-scroll-area::-webkit-scrollbar { width: 6px; }
+    .cl-items-list::-webkit-scrollbar-track, .quiz-scroll-area::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .cl-items-list::-webkit-scrollbar-thumb, .quiz-scroll-area::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    
+    .cl-title { font-size: 1.5rem; font-weight: 900; color: var(--primary-dark); margin: 0 0 0.5rem 0; }
+    .cl-progress { font-size: 1rem; color: var(--secondary-dark); font-weight: 900; }
+    .success-msg { flex-shrink: 0; text-align: center; color: var(--green-dark); font-weight: 900; font-size: 1.2rem; margin-top: 1rem; display: none; }
+    
+    .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-weight: 900; color: #64748B; border-bottom: 4px solid var(--bg-light); padding-bottom: 1rem; }
+    .q-number { color: var(--primary-dark); background: var(--bg-light); padding: 0.25rem 0.75rem; border-radius: 20px; }
+    .feedback-box { margin-top: 1.5rem; padding: 1rem; border-radius: 20px; display: none; border: 4px solid transparent; animation: fadeIn 0.3s; }
+    .feedback-box.correct { background: #DCFCE7; border-color: var(--green); }
+    .feedback-box.wrong { background: #FEE2E2; border-color: var(--red); }
+    .f-title { font-weight: 900; font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .correct .f-title { color: var(--green-dark); }
+    .wrong .f-title { color: var(--red-dark); }
+    .f-desc { font-weight: 700; color: #475569; }
+    .btn-next { margin-top: 1.5rem; display: none; }
+    #result-container { display: none; text-align: center; }
+    .score-circle { width: 120px; height: 120px; border-radius: 50%; background: var(--secondary); border: 4px solid var(--primary-dark); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 3rem; font-weight: 900; color: var(--primary-dark); box-shadow: 0 10px 0 var(--secondary-dark); }
+    .result-title { font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin-bottom: 0.5rem; }
+    .result-desc { font-size: 1.1rem; font-weight: 700; color: #64748B; margin-bottom: 2rem; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -45%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+  </style>
+
+  <script>
+    window.isTrackingActive = false;
+    window.activeTarget = null;
+    window.activeModels = null;
+
+    AFRAME.registerComponent('sticky-ar', {
+      tick: function () {
+        if (window.isTrackingActive && window.activeTarget && window.activeModels && window.activeTarget.object3D.visible) {
+          window.activeModels.setAttribute('visible', true);
+          window.activeModels.object3D.matrixAutoUpdate = false;
+          window.activeModels.object3D.matrix.copy(window.activeTarget.object3D.matrix);
+        }
+      }
+    });
+
+    // Database Gabungan (Hal 2 & 3)
+    const hal2Data = {
+      'telur': { title: 'Telur Ayam', desc: 'Sumber protein tinggi yang mudah diserap tubuh. Sangat baik untuk perkembangan otak anak.' },
+      'lele': { title: 'Ikan Lele', desc: 'Kaya asam lemak Omega-3 dan zat besi. Harganya terjangkau tapi gizinya juara.' },
+      'ikan': { title: 'Ikan Laut', desc: 'Sumber protein hewani berkualitas tinggi dan yodium untuk mencegah stunting.' },
+      'hati': { title: 'Hati Ayam', desc: 'Gudangnya zat besi! Sangat ampuh mencegah anemia pada ibu hamil dan balita.' },
+      'daging': { title: 'Daging Sapi', desc: 'Kaya akan protein dan zinc (seng) yang mempercepat pertumbuhan tinggi badan anak.' }
+    };
+    const hal3Data = {
+      'karbo': { title: 'Makanan Pokok', desc: 'Sumber Karbohidrat. Berfungsi sebagai sumber energi utama.', porsi: '2/3 Dari Setengah Piring' },
+      'protein': { title: 'Lauk Pauk', desc: 'Sumber Protein. Sangat penting untuk mencegah stunting.', porsi: '1/3 Dari Setengah Piring' },
+      'sayur': { title: 'Sayuran', desc: 'Sumber Serat. Menjaga pencernaan tetap sehat.', porsi: '2/3 Dari Setengah Piring' },
+      'buah': { title: 'Buah-buahan', desc: 'Kaya vitamin alami untuk menjaga sistem kekebalan tubuh.', porsi: '1/3 Dari Setengah Piring' }
+    };
+  </script>
+</head>
+<body>
+  
+  <div id="loading-screen" class="loading-screen">
+    <div class="loader-spinner"></div>
+    <h2>Memuat Kamera Super...</h2>
+    <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
+    <div id="loading-status" class="loading-status">Menyiapkan Mesin AR...</div>
+    <p>Arahkan kamera ke halaman mana saja, keajaiban akan muncul otomatis!</p>
+    <div class="permission-note">📷 Jika muncul notifikasi, izinkan akses kamera.</div>
+  </div>
+
+  <div class="ar-ui-layer">
+    <div class="top-nav" style="display: flex; justify-content: space-between; width: 100%;">
+      <a href="./index.html" class="back-btn interactive"><span>←</span> Kembali</a>
+      <button id="btn-rescan" class="back-btn interactive" style="display: none; background: #ef4444; color: white; border: none; font-weight: bold; cursor: pointer;">✕ Tutup Model</button>
+    </div>
+    <div id="scanning-guide" class="scanning-overlay">
+      <div class="scanning-text">Arahkan kamera ke Halaman manapun!</div>
+    </div>
+    
+    <div id="food-buttons-container" class="food-buttons" style="display: none;">
+      <!-- Akan diisi otomatis oleh JS -->
+    </div>
+  </div>
+
+  <div id="highlight-msg" class="highlight-msg">"Setiap kali makan, usahakan selalu ada PROTEIN HEWANI!"</div>
+
+  <div id="info-panel" class="info-panel">
+    <div class="panel-header">
+      <h3 id="panel-title" class="panel-title">Info Gizi</h3>
+      <button id="close-panel" class="close-btn interactive">✕</button>
+    </div>
+    <div class="panel-content">
+      <div id="panel-porsi" style="font-size: 1.15rem; font-weight: 900; color: #10b981; margin-bottom: 0.5rem; display:none;"></div>
+      <p id="panel-content-text" style="margin-top: 0;"></p>
+    </div>
+  </div>
+
+  <!-- Checklist Overlay -->
+  <div id="checklist-wrapper" class="checklist-wrapper interactive">
+    <div class="checklist-container">
+      <button class="close-btn interactive btn-close-overlay" style="position: absolute; top: -15px; right: -15px; z-index: 10;">✕</button>
+      <div class="cl-header"><h3 class="cl-title">5 Langkah Cegah</h3><div id="progress-text" class="cl-progress">0/5 Langkah Selesai</div></div>
+      <div class="cl-items-list">
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>1. Minum Tablet Tambah Darah</h4><p>Rutin minum TTD setiap hari untuk cegah anemia.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>2. Konsumsi Protein Hewani</h4><p>Makan telur, ikan, ayam setiap hari.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>3. ASI Eksklusif 6 Bulan</h4><p>Hanya berikan ASI di 6 bulan pertama.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>4. MPASI Bergizi</h4><p>Mulai usia 6 bulan, berikan MPASI seimbang.</p></div></div>
+        <div class="cl-item"><div class="cl-checkbox"></div><div class="cl-content"><h4>5. Rutin ke Posyandu</h4><p>Timbang berat badan & ukur tinggi badan.</p></div></div>
+      </div>
+      <div id="success-msg" class="success-msg">🎉 Luar biasa! Semua langkah tuntas!</div>
+    </div>
+  </div>
+
+  <!-- Quiz Overlay -->
+  <div class="quiz-wrapper interactive" id="quiz-wrapper">
+    <div class="quiz-container">
+      <button class="close-btn interactive btn-close-overlay" style="position: absolute; top: -15px; right: -15px; z-index: 10;">✕</button>
+      <div class="quiz-scroll-area">
+        <div id="start-screen" style="text-align: center;"><h2 style="font-size: 2rem; font-weight: 900; color: var(--primary-dark); margin-top:0;">Kuis Stunting</h2><p style="color: #64748B; font-weight: 700; margin-bottom: 2rem;">10 pertanyaan acak siap menanti!</p><button id="btn-start" class="btn-primary">Mulai Kuis</button></div>
+        <div id="question-screen" style="display: none;">
+          <div class="q-header"><span>Pertanyaan</span><span class="q-number" id="q-counter">1/10</span></div>
+          <div class="quiz-question" id="q-text">Loading...</div>
+          <div class="quiz-options"><button class="btn-option btn-mitos" id="btn-mitos">MITOS</button><button class="btn-option btn-fakta" id="btn-fakta">FAKTA</button></div>
+          <div class="feedback-box" id="feedback-box"><div class="f-title" id="f-title">Benar!</div><div class="f-desc" id="f-desc">Penjelasan...</div></div>
+          <button class="btn-primary btn-next" id="btn-next">Lanjut Berikutnya</button>
+        </div>
+        <div id="result-container">
+          <div class="score-circle" id="r-score">80</div>
+          <div class="result-title" id="r-title">Luar Biasa!</div>
+          <div class="result-desc" id="r-desc">Anda sangat memahami tentang stunting.</div>
+          <button id="btn-restart" class="btn-primary">Coba Lagi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a-scene sticky-ar mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; maxTrack: 1; filterMinCF:0.0001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true" vr-mode-ui="enabled: false">
+    <a-assets>
+      <a-asset-item id="anak_sehat" src="./models/anak_sehat.glb"></a-asset-item>
+      <a-asset-item id="anak_stunting" src="./models/anak_stunting.glb"></a-asset-item>
+      <a-asset-item id="telur" src="./models/telur.glb"></a-asset-item>
+      <a-asset-item id="lele" src="./models/lele.glb"></a-asset-item>
+      <a-asset-item id="ikan" src="./models/ikan.glb"></a-asset-item>
+      <a-asset-item id="hati" src="./models/hati_ayam.glb"></a-asset-item>
+      <a-asset-item id="daging" src="./models/daging_sapi.glb"></a-asset-item>
+      <a-asset-item id="piring" src="./models/piring_makanan.glb"></a-asset-item>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Target 0: Hal 1 -->
+    <a-entity mindar-image-target="targetIndex: 0" class="ar-target" data-page="1">
+      <a-entity class="models-container" visible="false">
+        <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
+        <a-gltf-model src="#anak_sehat" position="-0.7 -1.05 -0.05" scale="0.66 0.66 0.66"></a-gltf-model>
+        <a-gltf-model src="#anak_stunting" position="0.8 -0.95 0" scale="0.8 0.8 0.8"></a-gltf-model>
+        <a-text value="Tumbuh Optimal" position="-0.7 -1.3 0" align="center" color="#16a34a" scale="0.4 0.4 0.4" font="https://cdn.aframe.io/fonts/Roboto-msdf.json"></a-text>
+        <a-text value="Stunting" position="0.8 -1.3 0" align="center" color="#dc2626" scale="0.4 0.4 0.4" font="https://cdn.aframe.io/fonts/Roboto-msdf.json"></a-text>
+      </a-entity>
+    </a-entity>
+
+    <!-- Target 1: Hal 2 -->
+    <a-entity mindar-image-target="targetIndex: 1" class="ar-target" data-page="2">
+      <a-entity class="models-container" visible="false">
+        <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
+        <a-gltf-model src="#telur" position="0 0.05 -0.6" scale="3.26 3.26 3.26" rotation="90 0 0"></a-gltf-model>
+        <a-gltf-model src="#lele" position="-1.05 0 -0.75" scale="0.06 0.06 0.06" rotation="90 5 0"></a-gltf-model>
+        <a-gltf-model src="#ikan" position="1.1 0.1 -0.5" scale="0.06 0.06 0.06" rotation="-90 180 0"></a-gltf-model>
+        <a-gltf-model src="#hati" position="0.1 1.15 -0.45" scale="1.18 1.18 1.18" rotation="90 0 0"></a-gltf-model>
+        <a-gltf-model src="#daging" position="0 -1.15 -0.7" scale="0.07 0.07 0.07" rotation="90 0 0"></a-gltf-model>
+      </a-entity>
+    </a-entity>
+
+    <!-- Target 2: Hal 3 -->
+    <a-entity mindar-image-target="targetIndex: 2" class="ar-target" data-page="3">
+      <a-entity class="models-container" visible="false">
+        <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+        <a-light type="directional" color="#ffffff" intensity="0.6" position="0 1 1"></a-light>
+        <a-gltf-model id="plate-model" src="#piring" position="0 0 0" scale="0 0 0" rotation="90 0 0" animation__appear="property: scale; from: 0 0 0; to: 0.05 0.05 0.05; dur: 1000; easing: easeOutElastic; startEvents: appear"></a-gltf-model>
+      </a-entity>
+    </a-entity>
+
+    <!-- Target 3: Hal 4 -->
+    <a-entity mindar-image-target="targetIndex: 3" class="ar-target" data-page="4"></a-entity>
+    <!-- Target 4: Hal 5 -->
+    <a-entity mindar-image-target="targetIndex: 4" class="ar-target" data-page="5"></a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Progress Bar
+      let progress = 0; const pb = document.getElementById('progress-bar'), stat = document.getElementById('loading-status');
+      const msgs = ["Memuat Aset 3D...", "Menyatukan Halaman...", "Menyiapkan Kuis...", "Hampir Selesai!"];
+      const ival = setInterval(()=>{if(progress<90){progress+=Math.random()*10;if(progress>90)progress=90;if(pb)pb.style.width=`${progress}%`;let m=Math.floor(progress/25);if(m<msgs.length)stat.textContent=msgs[m];}},800);
+      document.querySelector('a-scene').addEventListener('arReady', () => {
+        clearInterval(ival); if(pb)pb.style.width='100%'; stat.textContent="Selesai!";
+        setTimeout(() => document.getElementById('loading-screen').classList.add('hidden'), 500);
+      });
+
+      // UI Elements
+      const btnRescan = document.getElementById('btn-rescan');
+      const scanningGuide = document.getElementById('scanning-guide');
+      const infoPanel = document.getElementById('info-panel');
+      const foodBtnsContainer = document.getElementById('food-buttons-container');
+      const highlightMsg = document.getElementById('highlight-msg');
+      const checklistWrap = document.getElementById('checklist-wrapper');
+      const quizWrap = document.getElementById('quiz-wrapper');
+
+      // Helper to clear all UI
+      const clearAllUI = () => {
+        window.isTrackingActive = false;
+        if(window.activeModels) window.activeModels.setAttribute('visible', false);
+        btnRescan.style.display = 'none';
+        foodBtnsContainer.style.display = 'none';
+        highlightMsg.style.display = 'none';
+        highlightMsg.classList.remove('visible');
+        infoPanel.classList.remove('visible');
+        checklistWrap.classList.remove('visible-wrapper');
+        quizWrap.classList.remove('visible-wrapper');
+        scanningGuide.style.display = 'flex';
+        // Reset plate
+        const p = document.getElementById('plate-model'); if(p) p.setAttribute('scale', '0 0 0');
+      };
+
+      btnRescan.addEventListener('click', clearAllUI);
+      document.querySelectorAll('.btn-close-overlay').forEach(btn => btn.addEventListener('click', clearAllUI));
+      document.getElementById('close-panel').addEventListener('click', () => infoPanel.classList.remove('visible'));
+
+      // AR Targets Logic
+      document.querySelectorAll('.ar-target').forEach(target => {
+        target.addEventListener('targetFound', () => {
+          clearAllUI(); // ensure clean slate
+          window.activeTarget = target;
+          window.activeModels = target.querySelector('.models-container');
+          window.isTrackingActive = true;
+          scanningGuide.style.display = 'none';
+          
+          const page = target.dataset.page;
+          if (page === "1" || page === "2" || page === "3") {
+            btnRescan.style.display = 'block';
+          }
+          
+          if (page === "2") {
+            foodBtnsContainer.innerHTML = `
+              <button class="food-btn active-btn" data-type="hal2" data-id="telur">Telur Ayam</button>
+              <button class="food-btn active-btn" data-type="hal2" data-id="lele">Ikan Lele</button>
+              <button class="food-btn active-btn" data-type="hal2" data-id="ikan">Ikan Laut</button>
+              <button class="food-btn active-btn" data-type="hal2" data-id="hati">Hati Ayam</button>
+              <button class="food-btn active-btn" data-type="hal2" data-id="daging">Daging Sapi</button>
+            `;
+            foodBtnsContainer.style.display = 'flex';
+          } else if (page === "3") {
+            setTimeout(() => { if(!window.isTrackingActive || window.activeTarget !== target) return; 
+              document.getElementById('plate-model').emit('appear');
+              setTimeout(() => { if(!window.isTrackingActive || window.activeTarget !== target) return;
+                highlightMsg.style.display = 'block'; highlightMsg.classList.add('visible');
+                foodBtnsContainer.innerHTML = `
+                  <button class="food-btn active-btn" data-type="hal3" data-id="karbo">Karbohidrat</button>
+                  <button class="food-btn active-btn" data-type="hal3" data-id="protein">Protein</button>
+                  <button class="food-btn active-btn" data-type="hal3" data-id="sayur">Sayuran</button>
+                  <button class="food-btn active-btn" data-type="hal3" data-id="buah">Buah</button>
+                `;
+                foodBtnsContainer.style.display = 'flex';
+              }, 1000);
+            }, 500);
+          } else if (page === "4") {
+            checklistWrap.classList.add('visible-wrapper');
+          } else if (page === "5") {
+            quizWrap.classList.add('visible-wrapper');
+            document.getElementById('start-screen').style.display = 'block';
+            document.getElementById('question-screen').style.display = 'none';
+            document.getElementById('result-container').style.display = 'none';
+          }
+
+          // Attach Food Buttons Events
+          document.querySelectorAll('.food-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const type = btn.dataset.type;
+              const data = type === 'hal2' ? hal2Data[btn.dataset.id] : hal3Data[btn.dataset.id];
+              if(data) {
+                document.getElementById('panel-title').textContent = data.title;
+                document.getElementById('panel-content-text').textContent = data.desc;
+                const pPorsi = document.getElementById('panel-porsi');
+                if(data.porsi) { pPorsi.textContent = "Porsi: " + data.porsi; pPorsi.style.display = 'block'; } else { pPorsi.style.display = 'none'; }
+                infoPanel.classList.add('visible');
+              }
+            });
+          });
+        });
+      });
+
+      // Checklist Logic
+      let chkCount = 0;
+      document.querySelectorAll('.cl-item').forEach(item => {
+        item.addEventListener('click', () => {
+          if(!item.classList.contains('checked')){ item.classList.add('checked'); chkCount++; }
+          else { item.classList.remove('checked'); chkCount--; }
+          document.getElementById('progress-text').textContent = `${chkCount}/5 Langkah Selesai`;
+          document.getElementById('success-msg').style.display = chkCount === 5 ? 'block' : 'none';
+        });
+      });
+
+      // Quiz Logic
+      let allQ=[], curQ=[], qIdx=0, qScore=0;
+      fetch('./pages/hal5-quiz/quiz-data.json').then(r=>r.json()).then(d=>allQ=d.questions).catch(e=>console.log(e));
+      
+      const startQuiz = () => {
+        if(!allQ.length) return;
+        curQ = [...allQ].sort(()=>0.5-Math.random()).slice(0,10); qIdx=0; qScore=0;
+        document.getElementById('start-screen').style.display='none';
+        document.getElementById('result-container').style.display='none';
+        document.getElementById('question-screen').style.display='block';
+        showQ();
+      };
+      const showQ = () => {
+        document.getElementById('q-counter').textContent=`${qIdx+1}/10`;
+        document.getElementById('q-text').textContent=curQ[qIdx].pertanyaan;
+        document.getElementById('feedback-box').style.display='none'; document.getElementById('feedback-box').className='feedback-box';
+        document.getElementById('btn-next').style.display='none';
+        document.getElementById('btn-mitos').disabled=false; document.getElementById('btn-fakta').disabled=false;
+      };
+      const handleAns = (ans) => {
+        const isC = ans === curQ[qIdx].jawaban; if(isC) qScore++;
+        document.getElementById('btn-mitos').disabled=true; document.getElementById('btn-fakta').disabled=true;
+        const fb = document.getElementById('feedback-box'); fb.style.display='block';
+        if(isC){ fb.classList.add('correct'); document.getElementById('f-title').textContent='Benar!'; }
+        else{ fb.classList.add('wrong'); document.getElementById('f-title').textContent=`Salah, itu ${curQ[qIdx].jawaban.toUpperCase()}`; }
+        document.getElementById('f-desc').textContent=curQ[qIdx].keterangan;
+        document.getElementById('btn-next').style.display='block';
+        document.getElementById('btn-next').textContent = qIdx === curQ.length-1 ? 'Lihat Hasil' : 'Lanjut';
+      };
+      document.getElementById('btn-start').addEventListener('click', startQuiz);
+      document.getElementById('btn-restart').addEventListener('click', startQuiz);
+      document.getElementById('btn-mitos').addEventListener('click', ()=>handleAns('mitos'));
+      document.getElementById('btn-fakta').addEventListener('click', ()=>handleAns('fakta'));
+      document.getElementById('btn-next').addEventListener('click', ()=>{ qIdx++; if(qIdx<curQ.length) showQ(); else {
+        document.getElementById('question-screen').style.display='none'; document.getElementById('result-container').style.display='block';
+        document.getElementById('r-score').textContent=qScore*10;
+        document.getElementById('r-title').textContent = qScore>=9?'Jagoan!':qScore>=7?'Bagus!':'Belajar Lagi!';
+        document.getElementById('r-desc').textContent = "Hasil kuis kamu.";
+      }});
+    });
+  </script>
+</body>
+</html>
