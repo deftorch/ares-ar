@@ -178,7 +178,7 @@
     </div>
   </div>
 
-  <a-scene sticky-ar mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; maxTrack: 1; filterMinCF:0.0001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true" vr-mode-ui="enabled: false">
+  <a-scene sticky-ar mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; maxTrack: 1; filterMinCF:0.0001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true; physicallyCorrectLights: true" vr-mode-ui="enabled: false" gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/; basisTranscoderPath: https://cdn.jsdelivr.net/npm/three@0.154.0/examples/jsm/libs/basis/; meshoptDecoderPath: https://unpkg.com/meshoptimizer@0.19.0/meshopt_decoder.js;">
     <a-assets>
       <a-asset-item id="anak_sehat" src="./models/anak_sehat.glb"></a-asset-item>
       <a-asset-item id="anak_stunting" src="./models/anak_stunting.glb"></a-asset-item>
